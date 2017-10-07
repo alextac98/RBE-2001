@@ -1,0 +1,182 @@
+/*
+   Messages.cpp
+
+    Created on: Sep 15, 2016, modded later
+        Author: bradmiller, modded by Andrew Schueler
+*/
+
+#include "Arduino.h"
+#include "Messages.h"
+#include "BTComms.h"
+
+BTComms comms;
+
+/**    Constuctor
+   Initialize everything here when the class is created
+   Note: you cannot call methods that depend on other classes having already been created
+*/
+
+Messages::Messages() {
+  timecurrent = millis();                 // This is for the heartbeat and ratiation alert.
+  timeprev = 0;                           // These 2 aren't implemented yet.
+
+  availstorage = 0x00;                    // Initialize to 0.
+  availsupply = 0x00;
+  radiationalert = 0x00;                  // We don't start with radiation.
+
+  robotmove = 0x01;       // 0x01 = stopped 0x02 = teleop moving, 0x03 auto moving
+  prevrobotmove = 0x03;   // This is how we store the previous movement variable.
+  robotgrip = 0x00;       // 0x01 = no rod, 0x02 = has rod
+  robotopstatus = 0x06;   // 0x01 = grip attempt in process, 0x02 grip release in progress,
+  // 0x03 = driving to reactor rod, 0x04 = driving to storage area, 0x05 = Driving to supply area, 0x06 = Idle, no opp in progress
+}
+
+/*  Returns if the state is 0x00 "Reserved" or 0x01 "Stopped".*/
+bool Messages::isStopped() {
+  return robotmove == 0x01 || robotmove == 0x00;
+}
+
+/*  Set radiation alert.*/
+void Messages::setradAlert(unsigned char alert) {
+  radiationalert = alert;
+}
+
+/*  Get radiation alert.*/
+unsigned char Messages::readradAlert() {
+  return radiationalert;
+}
+
+/*  Read the storage bins*/
+unsigned char Messages::readstrorage() {
+  return availstorage;
+}
+
+/*  Read supply bins.*/
+unsigned char Messages::readsupply() {
+  return availsupply;
+}
+
+/*  Read robotmove state*/
+unsigned char Messages::readrobotmove() {
+  return robotmove;
+}
+
+/*  Read prevrobotmove state*/
+unsigned char Messages::prevreadrobotmove() {
+  return prevrobotmove;
+}
+
+/*  Read robotgrip state*/
+unsigned char Messages::readrobotgrip() {
+  return robotgrip;
+}
+
+/*  Read robotopstatus state*/
+unsigned char Messages::readrobotopstatus() {
+  return robotopstatus;
+}
+
+/**   Setup class code that is called from the Arduino sketch setup() function. This doesn't
+   get called until all the other classes have been created.
+*/
+void Messages::setup() {
+  comms.setup();
+}
+
+/**
+   Send a heartbeat message to the field to let it know that your code is alive
+   This should be called by your robot program periodically, say once per second. This
+   timing can easily be done in the loop() function of your program.
+*/
+// This will become depreciated when I create a sendMessage method.
+void Messages::sendHeartbeat() {
+  comms.writeMessage(kHeartbeat, 0x0A, 0x00);
+}
+
+/**
+   Print message for debugging
+   This method prints the message as a string of hex numbers strictly for debugging
+   purposes and is not required to be called for any other purpose.
+*/
+void Messages::printMessage() {
+  for (int i = 0; i < comms.getMessageLength(); i++) {
+    Serial.print(comms.getMessageByte(i), HEX);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
+/**
+   Read messages from the Bluetooth serial connection
+   This method should be called from the loop() function in your arduino code. It will check
+   to see if the lower level comms object has received a complete message, and run the appropriate
+   code to handle the message type. This should just save the state of the message inside this class
+   inside member variables. Then add getters/setters to retrieve the status from your program.
+*/
+bool Messages::readcomms()
+{
+  if (comms.readSwag())
+  {
+    if (comms.getMessageByte(1) == 0x0A || comms.getMessageByte(1) == 0x00) // Because we are team 10!!!!, do we want (1) or (2) for getMessageByte()???
+    {
+      switch (comms.getMessageByte(0)) {
+        case kStorageAvailability:
+          // Availability mask length of '1'   Bitmask of available tubes. Bit 0 = tube 1; Bit 1 = tube 2, ...  If tube bit = 0, tube is empty; if tube bit = 1, tube is occupied
+          // Supply does not have the cone, storage has the cone.
+          availstorage = comms.getMessageByte(3);           // STORAGE tubes are wanted to be bits 0-3
+          break;
+        case kSupplyAvailability:
+          availsupply = comms.getMessageByte(3);    // SUPPLY tubes are wanted to be bits 0-3
+          break;
+        case kRadiationAlert:
+          // We don't receive the alert. We send it.
+          break;
+        case kStopMovement:
+          // prevrobotmove = readrobotmove();
+          robotmove = 0x01; // stipped is true
+          break;
+        case kResumeMovement:
+          robotmove = 0x03; //prevrobotmove;
+          break;
+        case kRobotStatus:
+          // we don't receive robot status, do we?
+          break;
+        case kHeartbeat:
+          // We don't receive heatbeats, we send heartbeats.
+          break;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+// This method figures out what data to send given the type of message you input. There are only 3 types of messages to send.
+void Messages::sendMessage(MessageType msgtype) {
+  switch (msgtype)  {
+    case kStorageAvailability:
+      // Availability mask length of '1'       Bitmask of available tubes. Bit 0 = tube 1; Bit 1 = tube 2, ...  If tube bit = 0, tube is empty; if tube bit = 1, tube is occupied
+      // Supply does not have the cone, storage has the cone.
+      // We don't send this.
+      break;
+    case kSupplyAvailability:
+      // We don't send this.
+      break;
+    case kRadiationAlert:
+      // No more than once per second!!!!
+      comms.writeMessageRad(0x0A, 0x00, radiationalert);
+      break;
+    case kStopMovement:
+      // Don't send anythign here.
+      break;
+    case kResumeMovement:
+      // We don't send this.
+      break;
+    case kRobotStatus:
+      comms.writeMessageRobotStatus(0x0A, 0x00, readrobotmove(), readrobotgrip(), readrobotopstatus());
+      break;
+    case kHeartbeat:
+      comms.writeMessage(kHeartbeat, 0x0a, 0x00);
+      break;
+  }
+}
