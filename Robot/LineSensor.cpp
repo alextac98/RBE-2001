@@ -1,93 +1,64 @@
-// 
-// 
-// Code forked from https://github.com/RattyDAVE/ArduinoRobot/tree/master/libraries/SunFounderLineFollower
-
 #include "LineSensor.h"
 
 #include "Arduino.h"
 #include <Wire.h>
+#include "Pinout.h"
 
-
-LineSensor::LineSensor()
-{
-
-	//SDA=D2 and SCL=D1
-	//Wire.begin(D1,D2);
+LineSensor::LineSensor(){
 	Wire.begin();
-	//Calibration Min and Max
-	int  cal_max[8];
-	int  cal_min[8];
+}
+
+void LineSensor::calibrate(){
 
 }
 
-void LineSensor::calibrate()
-{
-	int raw[8];
-	Wire.requestFrom(9, 16);
-	for (int x = 0; x <= 100; x++) {
-		for (int i = 0; i <= 7; i++) {
-			raw[i] = Wire.read() << 8 | Wire.read();
-
-			if (cal_min[i] < 1) {
-				cal_min[i] = raw[0];
-			}
-			cal_min[i] = ((raw[i] > 0) && (raw[i] < cal_min[i])) ? raw[i] : cal_min[i];
-			cal_max[i] = (raw[i] > cal_max[i]) ? raw[i] : cal_max[i];
-		}
-	}
+void LineSensor::calibrate_show(){
+	
 }
 
-void LineSensor::calibrate_show()
-{
-	Serial.print("cal_show min\t");
-	for (int i = 0; i <= 7; i++) {
-		Serial.print(cal_min[i]);
-		Serial.print("\t");
-	}
-	Serial.println("");
-
-	Serial.print("cal_show max\t");
-	for (int i = 0; i <= 7; i++) {
-		Serial.print(cal_max[i]);
-		Serial.print("\t");
-	}
-	Serial.println("");
-}
-
-void LineSensor::calibrate_reset()
-{
-	for (int i = 0; i <= 7; i++) {
-		cal_min[i] = 0;
-		cal_max[i] = 0;
-	}
+void LineSensor::calibrate_reset(){
+	
 }
 
 void LineSensor::test()
 {
-	Serial.print("test \t");
-	int  r[8];
-	unsigned char _data[16];
-	int reqlen = Wire.requestFrom(9, 16);    // request 16 bytes from slave device #9
-	for (int i = 0; i <= reqlen - 1; i = i + 2) {
-		_data[i] = Wire.read(); // receive a byte as character
-		_data[i + 1] = Wire.read(); // receive a byte as character
-		r[i / 2] = _data[i] << 8 | _data[i + 1];
-		Serial.print(r[i / 2]);
-		Serial.print("\t");
+	unsigned int* raw = rawArray();
+	
+	for (int i = 0; i <= 9; i++) {
+		Serial.print("Pin "); Serial.print(i); Serial.print(" reads: ");
+		Serial.println(raw[i]);
 	}
-	Serial.println("");
+	Serial.println();
+
 }
 
-int * LineSensor::rawarray() {
-	int* raw = new int[8];
-	Wire.requestFrom(9, 16);
-	for (int i = 0; i <= 7; i++) raw[i] = Wire.read() << 8 | Wire.read();
+unsigned int * LineSensor::rawArray() {
+	unsigned int* raw = new unsigned int[9];
+
+	raw[0] = analogRead(VEXSENSOR);
+	raw[1] = analogRead(LINESENSOR1);
+	raw[2] = analogRead(LINESENSOR2);
+	raw[3] = analogRead(LINESENSOR3);
+	raw[4] = analogRead(LINESENSOR4);
+	raw[5] = analogRead(LINESENSOR5);
+	raw[6] = analogRead(LINESENSOR6);
+	raw[7] = analogRead(LINESENSOR7);
+	raw[8] = analogRead(LINESENSOR8);
+
 	return raw;
 }
 
-int LineSensor::byteprocessed(int s) {
-	int r = 0;
-	Wire.requestFrom(9, 16);
-	for (int i = 0; i <= 7; i++) ((Wire.read() << 8 | Wire.read()) > s) ? r |= 1 << i : r &= ~(1 << i);
-	return r;
+int * LineSensor::processedArray() {
+	int* processed = new int[9];
+	unsigned int* raw = rawArray();
+
+	for (int i = 0; i <= 9; i++) {
+		if (raw[i] > calibrationPoint) {
+			processed[i] = 1;
+		} else {
+			processed[i] = 0;
+		}
+	}
+
+	return processed;
 }

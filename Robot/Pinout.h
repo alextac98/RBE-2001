@@ -9,13 +9,13 @@ const bool isDriveLeftReversed = false;
 //#define ENCODERLEFT1 2
 //#define ENCODERLEFT2 22
 
-#define DRIVERIGHT 6
+#define DRIVERIGHT 4
 const bool isDriveRightReversed = true;
 //#define ENCODERRIGHT1 3
 //#define ENCODERRIGHT2 23
 
 //-----FourBar Constants--------------------------------
-#define FOURBARMOTOR 25
+#define FOURBARMOTOR 28
 #define GRIPPERMOTOR 29
 
 //#define UPSENSOR
@@ -27,8 +27,16 @@ const bool isDriveRightReversed = true;
 #define POT 11
 
 //-----Line Following Constants-------------------------
-#define LINESENSOR	//SDA-20 SCL-21
-#define VEXSENSOR
+#define VEXSENSOR 0
+
+#define LINESENSOR1 1
+#define LINESENSOR2 2
+#define LINESENSOR3 3
+#define LINESENSOR4 4
+#define LINESENSOR5 5
+#define LINESENSOR6 6
+#define LINESENSOR7 7
+#define LINESENSOR8 8
 
 //-----Bluetooth Constants------------------------------
 
