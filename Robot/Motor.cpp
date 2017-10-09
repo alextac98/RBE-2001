@@ -18,7 +18,7 @@ void Motor::motorSetup() {
 * @param int power from -100 to 100
 */
 void Motor::setPower(int power) {     //input from -100 to 100
-	if (abs(power) < 20) {              //used to prevent stall at low set speed
+	if (abs(power) < lowSpeed) {              //used to prevent stall at low set speed
 		power = 0;
 	}
 

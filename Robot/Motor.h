@@ -17,6 +17,7 @@ private:
 	boolean isReverse;
 	int pin;
 	Servo motor;
+	const int lowSpeed = 10;
 };
 #endif
 
