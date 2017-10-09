@@ -84,6 +84,7 @@
     <ClInclude Include="LineSensor.h" />
     <ClInclude Include="Motor.h" />
     <ClInclude Include="Pinout.h" />
+    <ClInclude Include="States.h" />
     <ClInclude Include="__vm\.Robot.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
