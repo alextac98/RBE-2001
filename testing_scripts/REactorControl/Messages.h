@@ -46,21 +46,24 @@ class Messages {
     bool readcomms();
     void setup();
     void printMessage();
+    
     // Andrew Added
+    
     void sendMessage(MessageType msgtype);
-
     void setradAlert(unsigned char alert);
-
-    void setrobotmovestate();
-
+    
+    void setrobotmovestate(unsigned char mover);
+    void setrobotgripstate(unsigned char gripper);
+    void setrobotopstate(unsigned char thatop);
+    
+    unsigned char readstorage();
+    unsigned char readsupply();
+    unsigned char readradAlert();
+    
   private:
     // Andrew Added
     unsigned long timecurrent;
     unsigned long timeprev;
-
-    unsigned char readstrorage();
-    unsigned char readsupply();
-    unsigned char readradAlert();
 
     unsigned char availstorage;		// Storage tubes are bits 0-3
     unsigned char availsupply;		// Bits 0-3

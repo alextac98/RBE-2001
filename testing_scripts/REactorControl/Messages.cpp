@@ -22,7 +22,7 @@ Messages::Messages() {
 
   availstorage = 0x00;                    // Initialize to 0.
   availsupply = 0x00;
-  radiationalert = 0x00;                  // We don't start with radiation.
+  radiationalert = 0x00;                  // We don't start with radiation. 0x2C spent fuel, 0xFF is new fuel
 
   robotmove = 0x01;       // 0x01 = stopped 0x02 = teleop moving, 0x03 auto moving
   prevrobotmove = 0x03;   // This is how we store the previous movement variable.
@@ -41,37 +41,54 @@ void Messages::setradAlert(unsigned char alert) {
   radiationalert = alert;
 }
 
+/*  Set robotmove status*/
+void Messages::setrobotmovestate(unsigned char mover) {
+  robotmove = mover;
+}
+
+/*  Set robotgrip status*/
+void Messages::setrobotgripstate(unsigned char gripper) {
+  robotgrip = gripper;
+}
+
+/*  Set robotopstatus status*/
+void Messages::setrobotopstate(unsigned char thatop) {
+  robotopstatus = thatop;
+}
+
+// Here are the getters
+
 /*  Get radiation alert.*/
 unsigned char Messages::readradAlert() {
   return radiationalert;
 }
 
-/*  Read the storage bins*/
-unsigned char Messages::readstrorage() {
+/*  Get storage bins*/
+unsigned char Messages::readstorage() {
   return availstorage;
 }
 
-/*  Read supply bins.*/
+/*  Get supply bins.*/
 unsigned char Messages::readsupply() {
   return availsupply;
 }
 
-/*  Read robotmove state*/
+/*  Get robotmove state*/
 unsigned char Messages::readrobotmove() {
   return robotmove;
 }
 
-/*  Read prevrobotmove state*/
+/*  Get prevrobotmove state*/
 unsigned char Messages::prevreadrobotmove() {
   return prevrobotmove;
 }
 
-/*  Read robotgrip state*/
+/*  Get robotgrip state*/
 unsigned char Messages::readrobotgrip() {
   return robotgrip;
 }
 
-/*  Read robotopstatus state*/
+/*  Get robotopstatus state*/
 unsigned char Messages::readrobotopstatus() {
   return robotopstatus;
 }
@@ -164,7 +181,12 @@ void Messages::sendMessage(MessageType msgtype) {
       break;
     case kRadiationAlert:
       // No more than once per second!!!!
-      comms.writeMessageRad(0x0A, 0x00, radiationalert);
+      // If there is any radiation, then output the message. Else, we don't send.
+      if (radiationalert != 0x00)
+      {
+        comms.writeMessageRad(0x0A, 0x00, radiationalert);
+      }
+      
       break;
     case kStopMovement:
       // Don't send anythign here.
