@@ -80,16 +80,20 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BTComms.h" />
     <ClInclude Include="Drivetrain.h" />
     <ClInclude Include="LineSensor.h" />
+    <ClInclude Include="Messages.h" />
     <ClInclude Include="Motor.h" />
     <ClInclude Include="Pinout.h" />
     <ClInclude Include="States.h" />
     <ClInclude Include="__vm\.Robot.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BTComms.cpp" />
     <ClCompile Include="Drivetrain.cpp" />
     <ClCompile Include="LineSensor.cpp" />
+    <ClCompile Include="Messages.cpp" />
     <ClCompile Include="Motor.cpp" />
   </ItemGroup>
   <PropertyGroup>
