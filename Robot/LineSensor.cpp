@@ -33,7 +33,6 @@ void LineSensor::test()
 }
 
 unsigned int * LineSensor::rawArray() {
-	unsigned int* raw = new unsigned int[9];
 
 	raw[0] = analogRead(VEXSENSOR);
 	raw[1] = analogRead(LINESENSOR1);
@@ -45,12 +44,13 @@ unsigned int * LineSensor::rawArray() {
 	raw[7] = analogRead(LINESENSOR7);
 	raw[8] = analogRead(LINESENSOR8);
 
+
 	return raw;
 }
 
 int * LineSensor::processedArray() {
 	int* processed = new int[9];
-	unsigned int* raw = rawArray();
+	rawArray();
 
 	for (int i = 0; i <= 9; i++) {
 		if (raw[i] > calibrationPoint) {
@@ -61,4 +61,26 @@ int * LineSensor::processedArray() {
 	}
 
 	return processed;
+}
+
+float LineSensor::avgLinePos()
+{
+	// readingSum is just a sum, while positionSum is weighted by position
+	rawArray();
+
+	float readingSum = 0.0;
+	float positionSum = 0.0;
+	for (int i = 1; i <= 8; i++) {
+		readingSum += raw[i];
+		// Subtract 1 from NUM_LINE_SENSORS to account for the fencepost problem
+		// Multiply by 2 and subtract 1 to map the 0-1 range to the -1-1 range
+		positionSum += (float)raw[i] * (float)(i);
+	}
+	return scaleNumber(positionSum/readingSum, 1, 9, -1, 1);
+	//return positionSum / readingSum;
+}
+
+float LineSensor::scaleNumber(float x, float in_min, float in_max, float out_min, float out_max)
+{
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }

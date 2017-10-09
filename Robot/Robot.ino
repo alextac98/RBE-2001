@@ -21,14 +21,12 @@ void setup() {
 }
 
 void loop() {
-  
-	int *raw = lineSensor.processedArray();
+	
+	float topSpeed = 25.0;
+	float multiplier = topSpeed*lineSensor.avgLinePos();
 
-	for (int i = 0; i <= 9; i++) {
-		Serial.print("Pin "); Serial.print(i); Serial.print(" reads: ");
-		Serial.println(raw[i]);
-	}
-	Serial.println();
+	drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+	//lineSensor.test();
 
-	delay(1000);
+	Serial.println(multiplier/topSpeed);
 }
