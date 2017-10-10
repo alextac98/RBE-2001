@@ -8,9 +8,11 @@
 #include "Drivetrain.h"
 #include "Wire.h"
 #include "States.h"
+#include "Arm.h"
 
 Drivetrain drive;
 LineSensor lineSensor;
+Arm arm;
 
 #define uchar unsigned char
 uchar t;
@@ -27,8 +29,8 @@ unsigned int radcounter = 0;                                            // This 
 unsigned int robotstatuscounter = 0;                                    // This is for delaying the robot status messages less often than 5 seconds in between each message.
 
 //Arm Servo variables
-Servo jxservo;
-Servo gripservo;
+//Servo jxservo;
+//Servo gripservo;
 
 int pos = 10;
 int posmin = 0;    // variable to store the servo position
@@ -43,58 +45,61 @@ void setup() {
   lcd.begin(16, 2);
   pinMode(DRIVEMODELED, OUTPUT);
   // SERVO SETUP
-  jxservo.attach(JXSERVO);
-  gripservo.attach(GRIPSERVO);
+  //jxservo.attach(JXSERVO);
+  //gripservo.attach(GRIPSERVO);
 
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println("Starting");
   msg.setup();
   timeForHeartbeat = millis() + 1000;
 }
 
 void loop() {
-  if (msg.readcomms()) { msg.printMessage(); }
-  if (millis() > timeForHeartbeat)
-  {
-    timeForHeartbeat = millis() + 1000;
-    // msg.setrobotmovestate(0x01)
-    //if (robotstatuscounter == 0) // If Now is the time so send the counter
-    if (radcounter == 0)
-    {
-      msg.sendHeartbeat();
-      msg.setradAlert(spentfuel); // new fuel alert = 0xFF, spent fuel = 0x2C
-      msg.sendMessage(0x03); // Send radiation
-      radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
-    }
-    else
-    {
-      msg.sendHeartbeat();
-      radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
-    }
-    robotstatuscounter = (robotstatuscounter + 1) % 6; // This is for the robot counter. Let's make this a seperate if statement.
-  }
-
-  lcd.setCursor(0, 0);
-  lcd.print("Supply");
-  lcd.setCursor(7, 0);
-  lcd.print(msg.readsupply(), HEX);
-  lcd.setCursor(0, 1);
-  lcd.print("Stored");
-  lcd.setCursor(7, 1);
-  lcd.print(msg.readstorage(), HEX);
-
-  if (msg.isStopped())
-  {
-    //Serial.println("Stopped");
-    digitalWrite(DRIVEMODELED, LOW); // Inverted logic
-
-  } else {
-    //Serial.println("Autonomous");
-    digitalWrite(DRIVEMODELED, HIGH); // Inverted logic
-  }
+	arm.armgripper(lowposOpen, analogRead(A11), 10, true);
 }
 
+void bluetoothComs() {
+	if (msg.readcomms()) { msg.printMessage(); }
+	if (millis() > timeForHeartbeat)
+	{
+		timeForHeartbeat = millis() + 1000;
+		// msg.setrobotmovestate(0x01)
+		//if (robotstatuscounter == 0) // If Now is the time so send the counter
+		if (radcounter == 0)
+		{
+			msg.sendHeartbeat();
+			msg.setradAlert(spentfuel); // new fuel alert = 0xFF, spent fuel = 0x2C
+			msg.sendMessage(kRadiationAlert); // Send radiation
+			radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
+		}
+		else
+		{
+			msg.sendHeartbeat();
+			radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
+		}
+		robotstatuscounter = (robotstatuscounter + 1) % 6; // This is for the robot counter. Let's make this a seperate if statement.
+	}
 
+	lcd.setCursor(0, 0);
+	lcd.print("Supply");
+	lcd.setCursor(7, 0);
+	lcd.print(msg.readsupply(), HEX);
+	lcd.setCursor(0, 1);
+	lcd.print("Stored");
+	lcd.setCursor(7, 1);
+	lcd.print(msg.readstorage(), HEX);
+
+	if (msg.isStopped())
+	{
+		//Serial.println("Stopped");
+		digitalWrite(DRIVEMODELED, LOW); // Inverted logic
+
+	}
+	else {
+		//Serial.println("Autonomous");
+		digitalWrite(DRIVEMODELED, HIGH); // Inverted logic
+	}
+}
 /*  float topSpeed = 25.0;
   float multiplier = topSpeed*lineSensor.avgLinePos();
 

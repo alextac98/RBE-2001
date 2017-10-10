@@ -47,6 +47,16 @@ typedef enum
 
 typedef enum
 {
+	highposOpen,
+	highposClose,
+	midposOpen,
+	midposClose,
+	lowposOpen,
+	lowposClose
+}armPos;
+
+typedef enum
+{
   norod = 0x01,
   hasrod = 0x02
 } robotGripState;
