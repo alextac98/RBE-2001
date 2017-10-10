@@ -18,11 +18,7 @@ const bool isDriveRightReversed = true;
 #define FOURBARMOTOR 28
 #define GRIPPERMOTOR 29
 
-//#define UPSENSOR
-//#define MIDSENSOR
-//#define LOWSENSOR
-
-#define TUBESENSOR
+#define TUBESENSOR 
 
 #define POT 11
 

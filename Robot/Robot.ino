@@ -22,11 +22,13 @@ void setup() {
 
 void loop() {
 	
-	float topSpeed = 25.0;
-	float multiplier = topSpeed*lineSensor.avgLinePos();
 
-	drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
-	//lineSensor.test();
-
-	Serial.println(multiplier/topSpeed);
 }
+
+/*  float topSpeed = 25.0;
+  float multiplier = topSpeed*lineSensor.avgLinePos();
+
+  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+  //lineSensor.test();
+
+  Serial.println(multiplier/topSpeed);*/
