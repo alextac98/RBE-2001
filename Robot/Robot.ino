@@ -17,17 +17,14 @@ uchar t;
 //void send_data(short a1,short b1,short c1,short d1,short e1,short f1);
 uchar data[16];
 
-
 // Andrew Added
 Messages msg;                                                           // The message object to read in commands from reactor control.
 unsigned long timeForHeartbeat;                                         // Used for timing the heartbeat.
-const int stopornawpin = 10;                                             // This is the stopped or Auto digital pin LED.
 
-LiquidCrystal lcd(40, 41, 42, 43, 44, 45);
+LiquidCrystal lcd(DISPLAY1, DISPLAY2, DISPLAY3, DISPLAY4, DISPLAY5, DISPLAY6);
 
 unsigned int radcounter = 0;                                            // This keeps the timing of the radiation message every 2! seconds.
 unsigned int robotstatuscounter = 0;                                    // This is for delaying the robot status messages less often than 5 seconds in between each message.
-const int testled = 13;                                                 // we have a test led in pin 13.
 
 //Arm Servo variables
 Servo jxservo;
@@ -35,13 +32,7 @@ Servo gripservo;
 
 int pos = 10;
 int posmin = 0;    // variable to store the servo position
-int posmax = 500;
-const int jxpin = 25; // pwm pin
-const int jxmotor = 9; // control pin
-
-const int grippin = 29; // pwm pin 29
-const int gripmotor = 8; // control pin
-
+int posmax = 500;  
 
 void setup() {
   // put your setup code here, to run once:
@@ -50,32 +41,22 @@ void setup() {
   // Andrew Added
   //LCD setup
   lcd.begin(16, 2);
-  pinMode(stopornawpin, OUTPUT);
-  pinMode(jxmotor, INPUT_PULLUP);
-  pinMode(gripmotor, INPUT_PULLUP);
-  // pinMode(controlmode, INPUT_PULLUP);
-  jxservo.attach(jxpin);
-  gripservo.attach(grippin);
+  pinMode(DRIVEMODELED, OUTPUT);
+  // SERVO SETUP
+  jxservo.attach(JXSERVO);
+  gripservo.attach(GRIPSERVO);
 
   Serial.begin(115200);
   Serial.println("Starting");
   msg.setup();
   timeForHeartbeat = millis() + 1000;
-
-  //Servo Setup
-
-
 }
 
 void loop() {
-  if (msg.readcomms())
-  { // this line changes
-    msg.printMessage();
-  }
+  if (msg.readcomms()) { msg.printMessage(); }
   if (millis() > timeForHeartbeat)
   {
     timeForHeartbeat = millis() + 1000;
-
     // msg.setrobotmovestate(0x01)
     //if (robotstatuscounter == 0) // If Now is the time so send the counter
     if (radcounter == 0)
@@ -90,10 +71,8 @@ void loop() {
       msg.sendHeartbeat();
       radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
     }
-    // robotstatuscounter = (robotstatuscounter + 1) % 6;
+    robotstatuscounter = (robotstatuscounter + 1) % 6; // This is for the robot counter. Let's make this a seperate if statement.
   }
-
-
 
   lcd.setCursor(0, 0);
   lcd.print("Supply");
@@ -107,11 +86,11 @@ void loop() {
   if (msg.isStopped())
   {
     //Serial.println("Stopped");
-    digitalWrite(stopornawpin, LOW); // Inverted logic
+    digitalWrite(DRIVEMODELED, LOW); // Inverted logic
 
   } else {
     //Serial.println("Autonomous");
-    digitalWrite(stopornawpin, HIGH); // Inverted logic
+    digitalWrite(DRIVEMODELED, HIGH); // Inverted logic
   }
 }
 

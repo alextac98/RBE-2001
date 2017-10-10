@@ -20,7 +20,7 @@ const bool isDriveRightReversed = true;
 
 #define TUBESENSOR 
 
-#define POT 11
+#define POT 11            // A11
 
 //-----Line Following Constants-------------------------
 #define VEXSENSOR 0
@@ -36,6 +36,7 @@ const bool isDriveRightReversed = true;
 
 //-----Bluetooth Constants------------------------------
 
+#define DRIVEMODELED 10
 
 //-----Display Constants--------------------------------
 #define DISPLAY1 40
@@ -46,6 +47,11 @@ const bool isDriveRightReversed = true;
 #define DISPLAY6 45
 
 #define STATUSLIGHT 10
+
+//-----Servo Constants----------------------------------
+
+#define JXSERVO 28
+#define GRIPSERVO 29
 
 //------------------------------------------------------
 #endif
