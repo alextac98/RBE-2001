@@ -8,6 +8,8 @@
 #ifndef MESSAGES_H_
 #define MESSAGES_H_
 
+#include "States.h"
+
 /**
    Handles Bluetooth messages as they are received from the Reactor Control System
    This class keeps the current state of the field and allows your program to query it at
@@ -29,16 +31,7 @@
 */
 class Messages {
   public:
-    typedef enum {kReserved,
-                  kStorageAvailability = 0x01,
-                  kSupplyAvailability = 0x02, //
-                  kRadiationAlert = 0x03,
-                  kStopMovement = 0x04,
-                  kResumeMovement = 0x05,
-                  kRobotStatus = 0x06,
-                  kHeartbeat = 0x07
-                 } MessageType;
-
+    
     Messages();
 
     bool isStopped(); // Why is this always bolded???

@@ -8,6 +8,7 @@
 #include "Arduino.h"
 #include "Messages.h"
 #include "BTComms.h"
+#include "States.h"
 
 BTComms comms;
 
@@ -26,7 +27,7 @@ Messages::Messages() {
 
   robotmove = 0x01;       // 0x01 = stopped 0x02 = teleop moving, 0x03 auto moving
   prevrobotmove = 0x03;   // This is how we store the previous movement variable.
-  robotgrip = 0x00;       // 0x01 = no rod, 0x02 = has rod
+  robotgrip = 0x01;       // 0x01 = no rod, 0x02 = has rod
   robotopstatus = 0x06;   // 0x01 = grip attempt in process, 0x02 grip release in progress,
   // 0x03 = driving to reactor rod, 0x04 = driving to storage area, 0x05 = Driving to supply area, 0x06 = Idle, no opp in progress
 }
@@ -185,8 +186,7 @@ void Messages::sendMessage(MessageType msgtype) {
       if (radiationalert != 0x00)
       {
         comms.writeMessageRad(0x0A, 0x00, radiationalert);
-      }
-      
+      }      
       break;
     case kStopMovement:
       // Don't send anythign here.
