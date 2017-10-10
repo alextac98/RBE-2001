@@ -1,14 +1,10 @@
 #include <TimerOne.h>
 #include <Servo.h>
-
-
 /*
   State machine that controls the arm and gripper. Needs to be tested!!!!!!!
-
         -- Written by Andrew Schueler
         --edited by Josue Contreras
 */
-
 Servo jxservo;
 Servo gripservo;
 
@@ -19,15 +15,13 @@ long difference = 0;
 int pos = 10;
 int posmin = 0;    // variable to store the servo position
 int posmax = 500;
-const int jxpin = 25; // pwm pin original 25
+const int jxpin = 28; // pwm pin original 25
 const int jxmotor = 9; // control pin
 
 const int grippin = 29; // pwm pin 29
-//const int gripmotor = 8; // control pin
+const int potpin = A11;       // This is the pin the pot is wired to.
 
-const int controlmode = 10;
-
-int potValue;
+int potVal = 0;               // This is the integer output of the potentiometer.
 
 typedef enum {
   lowpos1,
@@ -38,98 +32,81 @@ typedef enum {
   midpos0,
 } arm;
 
-bool bumper = true;
-
+bool bumper = false;
 
 void setup() {
-  //pinMode(jxmotor, INPUT_PULLUP); //0V down (0 degrees), 5V up (180 degrees)
-  //pinMode(gripmotor, INPUT_PULLUP); //
-  pinMode(controlmode, INPUT_PULLUP);
   Serial.begin(115200);
   jxservo.attach(jxpin);
   gripservo.attach(grippin);
 }
 
-void loop() {
-  
-  //armgripper(upperpos0, 50, bumper);
-  //armgripper(upperpos1,30, bumper);
-  //jxservo.write(180); gripservo.write(1);
-  //armgripper(lowpos0, 30, bumper);
-  //armgripper(lowpos1, 30, bumper);
-  
-//  jxservo.write(180);
-potValue = analogRead(A11); Serial.println(potValue);
-  
-  //armgripper(midpos0);
-  //armgripper(midpos1);
-//  potValue = analogRead(A11);
- Serial.println(potValue);
-//  delay(1000);
-bumper = false;
+void loop()
+{
+  potVal = analogRead(potpin);
+  bumper = armgripper(upperpos1, potVal, 100, bumper);    // We want to return true, which means that the whole move was completed.
+  Serial.print(potVal); Serial.print("   "); Serial.println(bumper);
 }
 
-//Values for pot are: 937 upperto 622 mid to 5 lower 
-//1 means gripper open, O menas gripper closed
-void armgripper(arm agposition, int threshold, bool bumperstop) {
-  if (bumperstop) {
-
-     //Serial.println(potValue);
-    
-    switch (agposition) {
-
+// Values for pot are: 937 upper to 622 mid to 5 lower
+// 1 means gripper open, 0 means gripper closed
+bool armgripper(arm agposition, int potValue, int threshold, bool bumperstop)
+{
+  if (!bumperstop)
+  {
+    switch (agposition)
+    {
       case upperpos1://Arm up, gripper open
-        jxservo.write(180);
-        potValue = analogRead(A11);
-        Serial.println(potValue);
-        if (potValue <= 915 + threshold && potValue >= 915 - threshold) {
-          gripservo.write(0); // maybe 180?? open
-          Serial.print(potValue);
-          break;
+        if (!((potValue <= (915 + threshold)) && (potValue >= (915 - threshold))))
+        { // This is the code that runs
+//          agposition = upperpos1;
+          jxservo.write(179); // Why is this not happening???
+          return false;
         }
-
+        else
+        { // This is the code that runs if the arm isn't quite at the correct angle.
+          gripservo.write(0); // maybe 180?? open
+          return true;
+        }
       case midpos1://Arm mid-position, gripper open
         jxservo.write(114);
-        potValue = analogRead(A11);
-        if (potValue <= 622 + threshold && potValue >= 622 - threshold) {
+        if ((potValue <= 622 + threshold) && (potValue >= 622 - threshold))
+        {
           gripservo.write(100); // maybe 180?? open
           break;
         }
-
+        break;
       case lowpos1:           //Arm down, gripper open
         jxservo.write(0);
-        potValue = 0;
-        potValue = analogRead(A11);
         if (potValue <= 5 + threshold && potValue >= 5 - threshold) {
           gripservo.write(100); // maybe 180?? open
           break;
         }
-
-      case upperpos0://Arm up, gripper closed
+        break;
+      case upperpos0:       //Arm up, gripper closed
         jxservo.write(180);
-        potValue = analogRead(A11);
         if (potValue <= 915 + threshold && potValue >= 915 - threshold) {
           gripservo.write(0); // maybe 180?? open
           break;
         }
-
-      case midpos0://Arm mid-position, gripper closed
+        break;
+      case midpos0:         //Arm mid-position, gripper closed
         jxservo.write(114);
-        potValue = analogRead(A11);
         if (potValue <= 622 + threshold && potValue >= 622 - threshold) {
           gripservo.write(0); // maybe 180?? open
           break;
         }
-
-      case lowpos0://Amr down, gripper closed
+        break;
+      case lowpos0:         //Arm down, gripper closed
         jxservo.write(0);
-        potValue = analogRead(A11);
-        if (potValue <= 259 + threshold && potValue >= 259 - threshold) {
+        if (potValue <= 259 + threshold && potValue >= 259 - threshold)
+        {
           gripservo.write(0); // maybe 180?? open
           break;
         }
-        
-
+        break;
+      default:
+        Serial.println("Invalid state");
+        break;
         /*
             case gripopen:
               gripservo.write(100); // maybe 180??
@@ -147,9 +124,7 @@ void armgripper(arm agposition, int threshold, bool bumperstop) {
   }
 }
 
-int potconvert(){
-  int valueconvert;
-  valueconvert = map(valueconvert, 0, 1023, 0, 180);
-  return valueconvert;
-}
 
+int potconvert(unsigned int valueconvert) {
+  return map(valueconvert, 0, 1023, 0, 180);
+}
