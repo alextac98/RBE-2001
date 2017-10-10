@@ -15,6 +15,7 @@ long difference = 0;
 int pos = 10;
 int posmin = 0;    // variable to store the servo position
 int posmax = 500;
+
 const int jxpin = 28; // pwm pin original 25
 const int jxmotor = 9; // control pin
 
@@ -58,7 +59,7 @@ bool armgripper(arm agposition, int potValue, int threshold, bool bumperstop)
       case upperpos1://Arm up, gripper open
         if (!((potValue <= (915 + threshold)) && (potValue >= (915 - threshold))))
         { // This is the code that runs
-//          agposition = upperpos1;
+          //          agposition = upperpos1;
           jxservo.write(179); // Why is this not happening???
           return false;
         }
@@ -68,42 +69,59 @@ bool armgripper(arm agposition, int potValue, int threshold, bool bumperstop)
           return true;
         }
       case midpos1://Arm mid-position, gripper open
-        jxservo.write(114);
-        if ((potValue <= 622 + threshold) && (potValue >= 622 - threshold))
+        if (!((potValue <= 622 + threshold) && (potValue >= 622 - threshold)))
+        {
+          jxservo.write(114);
+          return false;
+        }
+        else
         {
           gripservo.write(100); // maybe 180?? open
-          break;
+          return true;
         }
-        break;
       case lowpos1:           //Arm down, gripper open
-        jxservo.write(0);
-        if (potValue <= 5 + threshold && potValue >= 5 - threshold) {
+        if (!((potValue <= (5 + threshold)) && (potValue >= (5 - threshold))))
+        {
+          jxservo.write(0);
+          return false;
+        }
+        else
+        {
           gripservo.write(100); // maybe 180?? open
-          break;
+          return true;
         }
-        break;
       case upperpos0:       //Arm up, gripper closed
-        jxservo.write(180);
         if (potValue <= 915 + threshold && potValue >= 915 - threshold) {
-          gripservo.write(0); // maybe 180?? open
-          break;
+          jxservo.write(180);
+          return false;
         }
-        break;
-      case midpos0:         //Arm mid-position, gripper closed
-        jxservo.write(114);
-        if (potValue <= 622 + threshold && potValue >= 622 - threshold) {
-          gripservo.write(0); // maybe 180?? open
-          break;
-        }
-        break;
-      case lowpos0:         //Arm down, gripper closed
-        jxservo.write(0);
-        if (potValue <= 259 + threshold && potValue >= 259 - threshold)
+        else
         {
           gripservo.write(0); // maybe 180?? open
-          break;
+          return true;
         }
-        break;
+      case midpos0:         //Arm mid-position, gripper closed
+        if (!((potValue <= (622 + threshold) && potValue >= (622 - threshold))))
+        {
+          jxservo.write(114);
+          return false;
+        }
+        else
+        {
+          gripservo.write(0); // maybe 180?? open
+          return true;
+        }
+      case lowpos0:         //Arm down, gripper closed
+        if (!((potValue <= (259 + threshold) && potValue >= (259 - threshold))))
+        {
+          jxservo.write(0);
+          return false;
+        }
+        else
+        {
+          gripservo.write(0); // maybe 180?? open
+          return true;
+        }
       default:
         Serial.println("Invalid state");
         break;
