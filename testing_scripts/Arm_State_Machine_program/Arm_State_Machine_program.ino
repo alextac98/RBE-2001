@@ -8,18 +8,9 @@
 Servo jxservo;
 Servo gripservo;
 
-long counter1 = 0;
-long counter2 = 0;
-long difference = 0;
-
-int pos = 10;
-int posmin = 0;    // variable to store the servo position
-int posmax = 500;
-
 const int jxpin = 28; // pwm pin original 25
-const int jxmotor = 9; // control pin
-
 const int grippin = 29; // pwm pin 29
+
 const int potpin = A11;       // This is the pin the pot is wired to.
 
 int potVal = 0;               // This is the integer output of the potentiometer.
@@ -31,7 +22,7 @@ typedef enum {
   upperpos0,
   midpos1,
   midpos0,
-} arm;
+} ARM;
 
 bool bumper = false;
 
@@ -44,13 +35,13 @@ void setup() {
 void loop()
 {
   potVal = analogRead(potpin);
-  bumper = armgripper(upperpos1, potVal, 100, bumper);    // We want to return true, which means that the whole move was completed.
+  bumper = armgripper(upperpos1, potVal, 10, bumper);    // We want to return true, which means that the whole move was completed.
   Serial.print(potVal); Serial.print("   "); Serial.println(bumper);
 }
 
 // Values for pot are: 937 upper to 622 mid to 5 lower
 // 1 means gripper open, 0 means gripper closed
-bool armgripper(arm agposition, int potValue, int threshold, bool bumperstop)
+bool armgripper(ARM agposition, int potValue, int threshold, bool bumperstop)
 {
   if (!bumperstop)
   {
@@ -125,23 +116,9 @@ bool armgripper(arm agposition, int potValue, int threshold, bool bumperstop)
       default:
         Serial.println("Invalid state");
         break;
-        /*
-            case gripopen:
-              gripservo.write(100); // maybe 180??
-              //agposition = none;
-              break;
-
-            case gripclosed:
-              gripservo.write(0);
-              //agposition = none;
-              break;
-        */
-
-        //BONUS: LED for
     }
   }
 }
-
 
 int potconvert(unsigned int valueconvert) {
   return map(valueconvert, 0, 1023, 0, 180);
