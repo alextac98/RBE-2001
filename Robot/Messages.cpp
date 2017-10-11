@@ -25,12 +25,37 @@ Messages::Messages() {
   availsupply = 0x00;
   radiationalert = 0x00;                  // We don't start with radiation. 0x2C spent fuel, 0xFF is new fuel
 
+  storerod = 1;								// We initialize the storerod 
+
+
+
   robotmove = 0x01;       // 0x01 = stopped 0x02 = teleop moving, 0x03 auto moving
   prevrobotmove = 0x03;   // This is how we store the previous movement variable.
   robotgrip = 0x01;       // 0x01 = no rod, 0x02 = has rod
   robotopstatus = 0x06;   // 0x01 = grip attempt in process, 0x02 grip release in progress,
   // 0x03 = driving to reactor rod, 0x04 = driving to storage area, 0x05 = Driving to supply area, 0x06 = Idle, no opp in progress
 }
+
+int Messages::whichStore()
+{
+	int i = 1;
+	unsigned char startrods = availstorage | 0xF0; // 0xFz
+	// assume availstorage '1' means full
+	for (i = 1; i < 5; i++)
+	{
+		if ((startrods | 0xFE) == 0xFE)
+		{
+			return i;
+		}
+		else
+		{
+			//i++;
+			startrods = (startrods >> 1) | 0xF0;
+		}
+		// return 0;
+	}
+}
+
 
 /*  Returns if the state is 0x00 "Reserved" or 0x01 "Stopped".*/
 bool Messages::isStopped() {
@@ -94,6 +119,12 @@ unsigned char Messages::readrobotopstatus() {
   return robotopstatus;
 }
 
+/* This is the getter for which storage tube to use.*/
+int Messages::getwhichstore()
+{
+	return (int)storerod;
+}
+
 /**   Setup class code that is called from the Arduino sketch setup() function. This doesn't
    get called until all the other classes have been created.
 */
@@ -142,7 +173,8 @@ bool Messages::readcomms()
           // Availability mask length of '1'   Bitmask of available tubes. Bit 0 = tube 1; Bit 1 = tube 2, ...  If tube bit = 0, tube is empty; if tube bit = 1, tube is occupied
           // Supply does not have the cone, storage has the cone.
           availstorage = comms.getMessageByte(3);           // STORAGE tubes are wanted to be bits 0-3
-          break;
+		  storerod = whichStore();
+		  break;
         case kSupplyAvailability:
           availsupply = comms.getMessageByte(3);    // SUPPLY tubes are wanted to be bits 0-3
           break;

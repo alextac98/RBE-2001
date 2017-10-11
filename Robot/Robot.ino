@@ -38,8 +38,16 @@ pickupState armDo;
 int counter = 0;
 int lastTime;
 
+int storetubeavailability = 0;
+int supplytubeavailability = 0;
+
 float topSpeed =30.0;
 float multiplier;
+
+bool stopnow = false;
+bool wasstopped = false;
+
+robotdoState prevState;
 
 void setup() {
   // put your setup code here, to run once:
@@ -58,9 +66,23 @@ void setup() {
   msg.setup();
   timeForHeartbeat = millis() + 1000;
   robotDo = Start;
+  prevState = robotDo;
+  msg.setrobotmovestate(stopped);
+  msg.setradAlert(nofuel);
 }
 
 void loop() {
+	bluetoothComs();
+	stopnow = msg.isStopped();
+	if (stopnow && wasstopped == false) {
+		wasstopped = true;
+		prevState = robotDo;
+		robotDo = robotStop;
+	}
+	else if (stopnow == false && wasstopped == true) {
+		wasstopped = false;
+		robotDo = prevState;
+	}
 
 	switch (robotDo)
 	{
@@ -101,6 +123,7 @@ void loop() {
 		case close:
 			if (arm.closeGripper()) {
 				armDo = armUpward;
+				msg.setradAlert(spentfuel);
 			}
 			break;
 		case armUpward:
@@ -137,13 +160,28 @@ void loop() {
 				counter = 0;
 			}
 			break;
-		default:
-			break;
 		}
 		break;
 	case findUsedDispenser:
+
+		storetubeavailability = msg.whichStore();
+
+		/*int storetubeavailability = 0;
+int supplytubeavailability = 0;*/
+
 		multiplier = topSpeed*lineSensor.avgLinePos();
 		drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		break;
+	
+	case robotStop:
+		drive.setPower(0, 0);
+		if (!msg.isStopped()) {
+			robotDo = prevState;
+			break;
+		}
+		else {
+			robotDo = robotStop;
+		}
 		break;
 	default:
 		drive.setPower(0, 0);
@@ -158,6 +196,10 @@ void loop() {
 
 	//drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
 }
+
+
+
+
 
 void bluetoothComs() {
 	if (msg.readcomms()) { msg.printMessage(); }
@@ -190,6 +232,19 @@ void bluetoothComs() {
 	lcd.setCursor(7, 1);
 	lcd.print(msg.readstorage(), HEX);
 
+
+	if (msg.readradAlert() == spentfuel)
+	{
+		analogWrite(DRIVEMODELED, 512);
+	}
+	else if (msg.readradAlert() == newfuel)
+	{
+		analogWrite(DRIVEMODELED, 256);
+	}
+	else {
+		analogWrite(DRIVEMODELED, 0);
+	}
+	/*
 	if (msg.isStopped())
 	{
 		//Serial.println("Stopped");
@@ -200,4 +255,6 @@ void bluetoothComs() {
 		//Serial.println("Autonomous");
 		digitalWrite(DRIVEMODELED, HIGH); // Inverted logic
 	}
+	*/
+
 }

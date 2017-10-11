@@ -52,11 +52,16 @@ class Messages {
     unsigned char readstorage();
     unsigned char readsupply();
     unsigned char readradAlert();
+
+	int whichStore();
+	int getwhichstore();
     
   private:
     // Andrew Added
     unsigned long timecurrent;
     unsigned long timeprev;
+
+	unsigned char storerod;
 
     unsigned char availstorage;		// Storage tubes are bits 0-3
     unsigned char availsupply;		// Bits 0-3

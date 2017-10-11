@@ -40,7 +40,7 @@ typedef enum {
 
 typedef enum
 {
-  noFuel = 0x00,
+  nofuel = 0x00,
   newfuel = 0xFF,
   spentfuel = 0x2C
 } radState;

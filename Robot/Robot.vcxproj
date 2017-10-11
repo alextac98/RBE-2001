@@ -80,9 +80,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Arm.h" />
     <ClInclude Include="BTComms.h" />
     <ClInclude Include="Drivetrain.h" />
-    <ClInclude Include="fourBar.h" />
     <ClInclude Include="LineSensor.h" />
     <ClInclude Include="Messages.h" />
     <ClInclude Include="Motor.h" />
@@ -91,9 +91,9 @@
     <ClInclude Include="__vm\.Robot.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Arm.cpp" />
     <ClCompile Include="BTComms.cpp" />
     <ClCompile Include="Drivetrain.cpp" />
-    <ClCompile Include="fourBar.cpp" />
     <ClCompile Include="LineSensor.cpp" />
     <ClCompile Include="Messages.cpp" />
     <ClCompile Include="Motor.cpp" />

@@ -18,7 +18,7 @@ const bool isDriveRightReversed = true;
 #define FOURBARMOTOR 28
 #define GRIPPERMOTOR 29
 
-#define TUBESENSOR 23
+#define TUBESENSOR 23	//reactor button sensor
 
 #define POT A11            // A11
 
@@ -38,7 +38,7 @@ const bool isDriveRightReversed = true;
 
 //-----Bluetooth Constants------------------------------
 
-#define DRIVEMODELED 10
+#define DRIVEMODELED 24
 
 //-----Display Constants--------------------------------
 #define DISPLAY1 40
