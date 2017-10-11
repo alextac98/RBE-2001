@@ -60,7 +60,6 @@ bool Arm::isArmPosition(armPos position) {
 bool Arm::openGripper() {
 	gripper.write(gripperOpen);
 	if (lastOpenTime == 0) { lastOpenTime = millis();}
-
 	if (millis() - lastOpenTime > gripperDelay) {
 		lastOpenTime = 0;
 		return true;
@@ -71,7 +70,6 @@ bool Arm::openGripper() {
 bool Arm::closeGripper() {
 	gripper.write(gripperClosed);
 	if (lastClosedTime == 0) { lastClosedTime = millis(); }
-	Serial.println(millis() - lastClosedTime);
 	if (millis() - lastClosedTime > gripperDelay) {
 		lastClosedTime = 0;
 		return true;

@@ -24,7 +24,7 @@ void LineSensor::test()
 {
 	unsigned int* raw = rawArray();
 	
-	for (int i = 0; i <= 9; i++) {
+	for (int i = 0; i <= 10; i++) {
 		Serial.print("Pin "); Serial.print(i); Serial.print(" reads: ");
 		Serial.println(raw[i]);
 	}
@@ -43,13 +43,13 @@ unsigned int * LineSensor::rawArray() {
 	raw[6] = analogRead(LINESENSOR6);
 	raw[7] = analogRead(LINESENSOR7);
 	raw[8] = analogRead(LINESENSOR8);
-
+	raw[9] = analogRead(VEXSENSORSIDE);
 
 	return raw;
 }
 
 int * LineSensor::processedArray() {
-	int* processed = new int[9];
+	int* processed = new int[10];
 	rawArray();
 
 	for (int i = 0; i <= 9; i++) {
@@ -83,4 +83,25 @@ float LineSensor::avgLinePos()
 float LineSensor::scaleNumber(float x, float in_min, float in_max, float out_min, float out_max)
 {
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+bool LineSensor::isAllBlack() {
+	int* values = processedArray();
+	for (int i = 1; i <= 9; i++) {
+		if (values[i] != 1) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool LineSensor::isCentered() {
+	int* values = processedArray();
+	if (values[4] == 1 && values[5] == 1) {
+		if (values[1] == 0 && values[2] == 0 && values[3] == 0 &&
+			values[6] == 0 && values[7] == 0 && values[8] == 0) {
+			return true;
+		}
+	}
+	return false;
 }

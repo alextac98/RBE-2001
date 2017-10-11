@@ -35,6 +35,8 @@ int posmax = 500;
 
 robotdoState robotDo;
 pickupState armDo;
+int counter = 0;
+int lastTime;
 
 float topSpeed =30.0;
 float multiplier;
@@ -75,23 +77,25 @@ void loop() {
 		
 		break;
 	case approachNuke:
-		multiplier = topSpeed*lineSensor.avgLinePos();
-		drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
 		if (digitalRead(TUBESENSOR)) {
 			drive.setPower(0, 0);
 			robotDo = pickUpNukeLow;
 			armDo = armDownward;
 		}
+		else {
+			multiplier = topSpeed*lineSensor.avgLinePos();
+			drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		}
 		break;
 	case pickUpNukeLow:
 		//pick up nuke
+		drive.setPower(0, 0);
 		switch (armDo)
 		{
 		case armDownward:
 			arm.setArmPosition(down);
 			if (arm.isArmPosition(down)) {
 				armDo = close;
-				
 			}
 			break;
 		case close:
@@ -100,17 +104,46 @@ void loop() {
 			}
 			break;
 		case armUpward:
+			//Serial.println("hi");
 			arm.setArmPosition(up);
 			if (arm.isArmPosition(up)) {
 				robotDo = goToCenter;
+				counter = 0;
+				Serial.println("next state");
+			}
+			break;
+		default:
+			break;
+		
+		}
+		break;
+	case goToCenter:
+		//go to center
+		switch (counter)
+		{
+		case 0:
+			drive.setPower(-topSpeed, -topSpeed);
+			if (lineSensor.isAllBlack()) {
+				Serial.println("all black");
+				counter++;
+				drive.setPower(-topSpeed*1.25, topSpeed*1.25);
+			}
+			break;
+		case 1:
+			multiplier = topSpeed*1.25*lineSensor.avgLinePos();
+			drive.setPower(-topSpeed*1.25 + multiplier, topSpeed*1.25 - multiplier);
+			if (lineSensor.isCentered()) {
+				robotDo = findUsedDispenser;
+				counter = 0;
 			}
 			break;
 		default:
 			break;
 		}
-	case goToCenter:
-		//go to center
-		
+		break;
+	case findUsedDispenser:
+		multiplier = topSpeed*lineSensor.avgLinePos();
+		drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
 		break;
 	default:
 		drive.setPower(0, 0);
@@ -118,7 +151,7 @@ void loop() {
 	}
 
 	//fourBar.setPosition(up);
-	drive.setPower(0, 0);
+	//drive.setPower(0, 0);
 	//bluetoothComs();
 	//float topSpeed = 50.0;
 	//float multiplier = topSpeed*lineSensor.avgLinePos();

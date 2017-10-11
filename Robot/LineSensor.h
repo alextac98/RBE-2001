@@ -14,6 +14,8 @@ public:
 	void calibrate_show();
 	void calibrate_reset();
 
+	bool isAllBlack();
+	bool isCentered();
 	
 
 private:

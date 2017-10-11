@@ -34,6 +34,8 @@ const bool isDriveRightReversed = true;
 #define LINESENSOR7 7
 #define LINESENSOR8 8
 
+#define VEXSENSORSIDE 9
+
 //-----Bluetooth Constants------------------------------
 
 #define DRIVEMODELED 10
