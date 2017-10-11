@@ -18,7 +18,7 @@ const bool isDriveRightReversed = true;
 #define FOURBARMOTOR 28
 #define GRIPPERMOTOR 29
 
-#define TUBESENSOR 
+#define TUBESENSOR 23
 
 #define POT 11            // A11
 

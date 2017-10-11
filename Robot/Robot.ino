@@ -1,9 +1,9 @@
+#include "fourBar.h"
 #include "Arduino.h"
 #include "Messages.h"
 #include <LiquidCrystal.h>
 #include <Servo.h>
 #include "LineSensor.h"
-#include "Motor.h"
 #include "Pinout.h"
 #include "Drivetrain.h"
 #include "Wire.h"
@@ -11,6 +11,8 @@
 
 Drivetrain drive;
 LineSensor lineSensor;
+
+//FourBar fourBar;
 
 #define uchar unsigned char
 uchar t;
@@ -26,13 +28,14 @@ LiquidCrystal lcd(DISPLAY1, DISPLAY2, DISPLAY3, DISPLAY4, DISPLAY5, DISPLAY6);
 unsigned int radcounter = 0;                                            // This keeps the timing of the radiation message every 2! seconds.
 unsigned int robotstatuscounter = 0;                                    // This is for delaying the robot status messages less often than 5 seconds in between each message.
 
-//Arm Servo variables
-//Servo jxservo;
-//Servo gripservo;
-
 int pos = 10;
 int posmin = 0;    // variable to store the servo position
 int posmax = 500;  
+
+robotdoState robotDo;
+
+float topSpeed =30;
+float multiplier;
 
 void setup() {
   // put your setup code here, to run once:
@@ -42,21 +45,56 @@ void setup() {
   //LCD setup
   lcd.begin(16, 2);
   pinMode(DRIVEMODELED, OUTPUT);
-  // SERVO SETUP
-  //jxservo.attach(JXSERVO);
-  //gripservo.attach(GRIPSERVO);
 
-  Serial.begin(115200);
+  pinMode(TUBESENSOR, INPUT_PULLUP);
+
+  Serial.begin(9600);
   Serial.println("Starting");
   msg.setup();
   timeForHeartbeat = millis() + 1000;
+  robotDo = Start;
 }
 
 void loop() {
-	float topSpeed = 50.0;
-	float multiplier = topSpeed*lineSensor.avgLinePos();
 
-	drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+	switch (robotDo)
+	{
+	case Start:
+		//Set arm up
+
+		// open gripper
+
+		//drive motors set to zero
+		drive.setPower(0, 0);
+		robotDo = approachNuke;
+		break;
+	case approachNuke:
+		multiplier = topSpeed*lineSensor.avgLinePos();
+		drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		if (digitalRead(TUBESENSOR)) {
+			drive.setPower(0, 0);
+			robotDo = pickUpNukeLow;
+		}
+		break;
+	case pickUpNukeLow:
+		//pick up nuke
+		break;
+	case goToCenter:
+		//go to center
+		
+		break;
+	default:
+		drive.setPower(0, 0);
+		break;
+	}
+
+	//fourBar.setPosition(up);
+	drive.setPower(0, 0);
+	//bluetoothComs();
+	//float topSpeed = 50.0;
+	//float multiplier = topSpeed*lineSensor.avgLinePos();
+
+	//drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
 }
 
 void bluetoothComs() {
