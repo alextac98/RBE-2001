@@ -20,7 +20,7 @@ const bool isDriveRightReversed = true;
 
 #define TUBESENSOR 23
 
-#define POT 11            // A11
+#define POT A11            // A11
 
 //-----Line Following Constants-------------------------
 #define VEXSENSOR 0

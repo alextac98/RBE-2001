@@ -31,6 +31,13 @@ typedef enum
   robotStop = 13  // This state will show up in every other state as an if() statement. if isStopped() == true, then store prev state and then switch, else doo other state.
 } robotdoState;
 
+typedef enum {
+	armDownward,
+	close,
+	open,
+	armUpward
+}pickupState;
+
 typedef enum
 {
   noFuel = 0x00,
@@ -60,14 +67,5 @@ typedef enum
   drivetosupplyarea = 0x05,
   idle = 0x06 // no op in progress
 } robotOpState;
-
-typedef enum {
-  lowpos1,
-  lowpos0,
-  upperpos1,
-  upperpos0,
-  midpos1,
-  midpos0,
-} ARM;
 
 #endif

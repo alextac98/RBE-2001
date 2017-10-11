@@ -1,4 +1,4 @@
-#include "fourBar.h"
+#include "Arm.h"
 #include "Arduino.h"
 #include "Messages.h"
 #include <LiquidCrystal.h>
@@ -11,6 +11,7 @@
 
 Drivetrain drive;
 LineSensor lineSensor;
+Arm arm;
 
 //FourBar fourBar;
 
@@ -33,13 +34,15 @@ int posmin = 0;    // variable to store the servo position
 int posmax = 500;  
 
 robotdoState robotDo;
+pickupState armDo;
 
-float topSpeed =30;
+float topSpeed =30.0;
 float multiplier;
 
 void setup() {
   // put your setup code here, to run once:
   drive.DrivetrainSetup();
+  arm.armSetup();
 
   // Andrew Added
   //LCD setup
@@ -61,12 +64,15 @@ void loop() {
 	{
 	case Start:
 		//Set arm up
-
+		arm.setArmPosition(up);
 		// open gripper
-
+		arm.openGripper();
 		//drive motors set to zero
 		drive.setPower(0, 0);
-		robotDo = approachNuke;
+		if (arm.isArmPosition(up)) {
+			robotDo = approachNuke;
+		}
+		
 		break;
 	case approachNuke:
 		multiplier = topSpeed*lineSensor.avgLinePos();
@@ -74,11 +80,34 @@ void loop() {
 		if (digitalRead(TUBESENSOR)) {
 			drive.setPower(0, 0);
 			robotDo = pickUpNukeLow;
+			armDo = armDownward;
 		}
 		break;
 	case pickUpNukeLow:
 		//pick up nuke
-		break;
+		switch (armDo)
+		{
+		case armDownward:
+			arm.setArmPosition(down);
+			if (arm.isArmPosition(down)) {
+				armDo = close;
+				
+			}
+			break;
+		case close:
+			if (arm.closeGripper()) {
+				armDo = armUpward;
+			}
+			break;
+		case armUpward:
+			arm.setArmPosition(up);
+			if (arm.isArmPosition(up)) {
+				robotDo = goToCenter;
+			}
+			break;
+		default:
+			break;
+		}
 	case goToCenter:
 		//go to center
 		
