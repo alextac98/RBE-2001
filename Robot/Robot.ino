@@ -36,12 +36,14 @@ int posmax = 500;
 robotdoState robotDo;
 pickupState armDo;
 int counter = 0;
+int prevCounter = 0;
 int lastTime;
 
 int storetubeavailability = 0;
 int supplytubeavailability = 0;
 
 float topSpeed =30.0;
+float turningSpeed = 55.0;
 float multiplier;
 
 bool stopnow = false;
@@ -61,7 +63,7 @@ void setup() {
 
   pinMode(TUBESENSOR, INPUT_PULLUP);
 
-  Serial.begin(9600);
+  Serial.begin(14400);
   Serial.println("Starting");
   msg.setup();
   timeForHeartbeat = millis() + 1000;
@@ -77,11 +79,13 @@ void loop() {
 	if (stopnow && wasstopped == false) {
 		wasstopped = true;
 		prevState = robotDo;
+		prevCounter = counter;
 		robotDo = robotStop;
 	}
 	else if (stopnow == false && wasstopped == true) {
 		wasstopped = false;
 		robotDo = prevState;
+		counter = prevCounter;
 	}
 
 	switch (robotDo)
@@ -145,32 +149,48 @@ void loop() {
 		switch (counter)
 		{
 		case 0:
+			Serial.println("backing up");
 			drive.setPower(-topSpeed, -topSpeed);
 			if (lineSensor.isAllBlack()) {
 				Serial.println("all black");
 				counter++;
-				drive.setPower(-topSpeed*1.25, topSpeed*1.25);
+				// drive.setPower(turningSpeed, -turningSpeed);
 			}
 			break;
 		case 1:
-			multiplier = topSpeed*1.25*lineSensor.avgLinePos();
-			drive.setPower(-topSpeed*1.25 + multiplier, topSpeed*1.25 - multiplier);
-			if (lineSensor.isCentered()) {
-				robotDo = findUsedDispenser;
-				counter = 0;
+			Serial.println("starting to turn");
+			drive.setPower(turningSpeed, -turningSpeed);
+			if (lineSensor.sendProcessedValue(9) == 1) {
+				counter++;
 			}
 			break;
+		case 2:
+			drive.setPower(turningSpeed, -turningSpeed);
+			//Serial.println("Finishing to turn");
+			if (lineSensor.sendProcessedValue(6) == 1){
+				counter++;
+			}
+			break;
+		case 3:
+			Serial.println("line following");
+			multiplier = topSpeed*lineSensor.avgLinePos();
+			drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+			break;
+		default:
+			//drive.setPower(0, 0);
+			Serial.println("why am I here");
 		}
-		break;
+
 	case findUsedDispenser:
 
 		storetubeavailability = msg.whichStore();
+		drive.setPower(0, 0);
 
 		/*int storetubeavailability = 0;
 int supplytubeavailability = 0;*/
 
-		multiplier = topSpeed*lineSensor.avgLinePos();
-		drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		//multiplier = topSpeed*lineSensor.avgLinePos();
+		//drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
 		break;
 	
 	case robotStop:
@@ -188,13 +208,6 @@ int supplytubeavailability = 0;*/
 		break;
 	}
 
-	//fourBar.setPosition(up);
-	//drive.setPower(0, 0);
-	//bluetoothComs();
-	//float topSpeed = 50.0;
-	//float multiplier = topSpeed*lineSensor.avgLinePos();
-
-	//drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
 }
 
 
@@ -202,7 +215,9 @@ int supplytubeavailability = 0;*/
 
 
 void bluetoothComs() {
-	if (msg.readcomms()) { msg.printMessage(); }
+	if (msg.readcomms()) { 
+		//msg.printMessage(); 
+	}
 	if (millis() > timeForHeartbeat)
 	{
 		timeForHeartbeat = millis() + 1000;
@@ -211,7 +226,7 @@ void bluetoothComs() {
 		if (radcounter == 0)
 		{
 			msg.sendHeartbeat();
-			msg.setradAlert(spentfuel); // new fuel alert = 0xFF, spent fuel = 0x2C
+			//msg.setradAlert(spentfuel); // new fuel alert = 0xFF, spent fuel = 0x2C
 			msg.sendMessage(kRadiationAlert); // Send radiation
 			radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
 		}

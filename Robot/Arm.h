@@ -29,7 +29,7 @@ private:
 	long lastOpenTime;
 	const int gripperDelay = 500; //in millis
 
-	const int gripperClosed = 100;
+	const int gripperClosed = 180;
 	const int gripperOpen = 0;
 
 	const int armUp = 176;

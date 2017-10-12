@@ -49,9 +49,7 @@ unsigned int * LineSensor::rawArray() {
 }
 
 int * LineSensor::processedArray() {
-	int* processed = new int[10];
 	rawArray();
-
 	for (int i = 0; i <= 9; i++) {
 		if (raw[i] > calibrationPoint) {
 			processed[i] = 1;
@@ -87,11 +85,13 @@ float LineSensor::scaleNumber(float x, float in_min, float in_max, float out_min
 
 bool LineSensor::isAllBlack() {
 	int* values = processedArray();
-	for (int i = 1; i <= 9; i++) {
+	for (int i = 1; i <= 8; i++) {
 		if (values[i] != 1) {
+			//Serial.println("Returning false");
 			return false;
 		}
 	}
+	//Serial.println("ReturningTrue");
 	return true;
 }
 
@@ -104,4 +104,9 @@ bool LineSensor::isCentered() {
 		}
 	}
 	return false;
+}
+
+float LineSensor::sendProcessedValue(int sensor) {
+	processedArray();
+	return processed[sensor];
 }

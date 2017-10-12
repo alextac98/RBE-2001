@@ -9,6 +9,7 @@ public:
 	unsigned int *rawArray();	//returns RAW values
 	int *processedArray();		//returns 0 or 1 for line
 	float avgLinePos();			//returns line position from 1 to -1 (L to R)
+	float sendProcessedValue(int sensor);
 
 	void calibrate();
 	void calibrate_show();
@@ -21,7 +22,8 @@ public:
 private:
 	int  calibrationPoint = 200;
 	float scaleNumber(float x, float in_min, float in_max, float out_min, float out_max);
-	unsigned int* raw = new unsigned int[9];
+	unsigned int* raw = new unsigned int[10];
+	int* processed = new int[10];
 
 };
 
