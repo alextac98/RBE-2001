@@ -50,11 +50,31 @@ int Messages::whichStore()
 		else
 		{
 			//i++;
-			startrods = (startrods >> 1) | 0xF0;
+			startrods = ((startrods >> 1) | 0xF0);
 		}
 		// return 0;
 	}
 }
+
+int Messages::whichSupply()                      // This is like the previous two methods above, but for supply tubes.
+{
+  int c = 1;
+  unsigned char suprods = availsupply | 0xF0; // 0xFz
+  // assume availstorage '1' means full
+  for (c = 1; c < 5; c++)
+  {
+    if ((suprods | 0xFE) == 0xFE)
+    {
+      return c;
+    }
+    else
+    {
+      suprods = ((suprods >> 1) | 0xF0);
+    }
+    // return 0;
+  }
+}
+  int getwhichSupply(); 
 
 
 /*  Returns if the state is 0x00 "Reserved" or 0x01 "Stopped".*/
