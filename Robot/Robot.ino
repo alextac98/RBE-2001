@@ -199,8 +199,6 @@ int supplytubeavailability = 0;*/
 
 
 
-
-
 void bluetoothComs() {
 	if (msg.readcomms()) { msg.printMessage(); }
 	if (millis() > timeForHeartbeat)
@@ -211,14 +209,14 @@ void bluetoothComs() {
 		if (radcounter == 0)
 		{
 			msg.sendHeartbeat();
-			msg.setradAlert(spentfuel); // new fuel alert = 0xFF, spent fuel = 0x2C
+			// msg.setradAlert(spentfuel); // new fuel alert = 0xFF, spent fuel = 0x2C
 			msg.sendMessage(kRadiationAlert); // Send radiation
 			radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
 		}
 		else
 		{
 			msg.sendHeartbeat();
-			radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
+			radcounter = (radcounter + 1) % 4; // this equals either 0, 1, 2, or 3.
 		}
 		robotstatuscounter = (robotstatuscounter + 1) % 6; // This is for the robot counter. Let's make this a seperate if statement.
 	}
