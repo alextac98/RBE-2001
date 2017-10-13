@@ -25,9 +25,8 @@ Messages::Messages() {
   availsupply = 0x00;
   radiationalert = 0x00;                  // We don't start with radiation. 0x2C spent fuel, 0xFF is new fuel
 
-  storerod = 1;								// We initialize the storerod 
-
-
+  storerod = 1;								// We initialize the storerod
+  supprod = 4;
 
   robotmove = 0x01;       // 0x01 = stopped 0x02 = teleop moving, 0x03 auto moving
   prevrobotmove = 0x03;   // This is how we store the previous movement variable.
@@ -38,32 +37,32 @@ Messages::Messages() {
 
 int Messages::whichStore()
 {
-	int i = 1;
-	unsigned char startrods = (availstorage << 4) | 0x0F; // 0xFz
-	// assume availstorage '1' means full
-	for (i = 4; i >= 1; i--)
+  int i = 4;
+  unsigned char startrods = ((availstorage << 4) | 0x0F); // 0xFz
+  // assume availstorage '1' means full
+  for (i = 4; i >= 1; i--)
 
-	{
-		if ((startrods | 0x7F) == 0x7F)
-		{
-			return i;
-		}
-		else
-		{
-			//i++;
-			startrods = ((startrods << 1) | 0x0F);
-		}
-		// return 0;
-	}
+  {
+    if ((startrods | 0x7F) == 0x7F)
+    {
+      return i;
+    }
+    else
+    {
+      //i++;
+      startrods = ((startrods << 1) | 0x0F);
+    }
+  }
 }
 
 int Messages::whichSupply()                      // This is like the previous two methods above, but for supply tubes.
 {
   int c = 1;
-  unsigned char suprods = availsupply;
-  // assume availstorage '1' means full
-  for (c = 4; c <= 1; c--){
-    if ((suprods | 0xFE) == 0xFE)
+  unsigned char suprods = (availsupply | 0xF0); // 0xFz
+  // assume availsupply '1' means full
+  for (c = 1; c <= 4; c++)
+  {
+    if ((suprods | 0xFE) == 0xFF)
     {
       return c;
     }
@@ -71,12 +70,14 @@ int Messages::whichSupply()                      // This is like the previous tw
     {
       suprods = ((suprods >> 1) | 0xF0);
     }
-    // return 0;
   }
 }
 
-int getwhichSupply(); 
-
+/* Read the correct supply variable */
+int Messages::getwhichSupply()
+{
+  return supprod;
+}
 
 /*  Returns if the state is 0x00 "Reserved" or 0x01 "Stopped".*/
 bool Messages::isStopped() {
@@ -141,9 +142,9 @@ unsigned char Messages::readrobotopstatus() {
 }
 
 /* This is the getter for which storage tube to use.*/
-int Messages::getwhichstore()
+int Messages::getwhichStorage()
 {
-	return (int)storerod;
+  return (int)storerod;
 }
 
 /**   Setup class code that is called from the Arduino sketch setup() function. This doesn't
@@ -194,10 +195,11 @@ bool Messages::readcomms()
           // Availability mask length of '1'   Bitmask of available tubes. Bit 0 = tube 1; Bit 1 = tube 2, ...  If tube bit = 0, tube is empty; if tube bit = 1, tube is occupied
           // Supply does not have the cone, storage has the cone.
           availstorage = comms.getMessageByte(3);           // STORAGE tubes are wanted to be bits 0-3
-		  storerod = whichStore();
-		  break;
+          storerod = whichStore();
+          break;
         case kSupplyAvailability:
           availsupply = comms.getMessageByte(3);    // SUPPLY tubes are wanted to be bits 0-3
+          supprod = whichSupply();
           break;
         case kRadiationAlert:
           // We don't receive the alert. We send it.
@@ -239,7 +241,7 @@ void Messages::sendMessage(MessageType msgtype) {
       if (radiationalert != 0x00)
       {
         comms.writeMessageRad(0x0A, 0x00, radiationalert);
-      }      
+      }
       break;
     case kStopMovement:
       // Don't send anythign here.

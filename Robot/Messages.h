@@ -54,7 +54,7 @@ class Messages {
     unsigned char readradAlert();
 
 	int whichStore();                       // This is called when we want to know which storage tube to go to.
-	int getwhichstore();                    // This is called to return the counter variable to find which storage to use.
+	int getwhichStorage();                    // This is called to return the counter variable to find which storage to use.
 
   int whichSupply();                      // This is like the previous two methods above, but for supply tubes.
   int getwhichSupply();                   // Ditto
@@ -64,8 +64,9 @@ class Messages {
     unsigned long timecurrent;
     unsigned long timeprev;
 
-	unsigned char storerod;
-
+	  unsigned char storerod;
+    unsigned char supprod;
+    
     unsigned char availstorage;		// Storage tubes are bits 0-3
     unsigned char availsupply;		// Bits 0-3
     unsigned char radiationalert;

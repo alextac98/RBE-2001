@@ -43,11 +43,11 @@ int prevCounter = 0;
 int lastTime;
 int lineCounter = 0;
 
-unsigned char storetubeavailability;
+int storetubeavailability = 0;
 int supplytubeavailability = 0;
 
 float topSpeed = 30.0;
-float turningSpeed = 35.0;
+float turningSpeed = 55.0;
 float multiplier;
 
 bool stopnow = false;
@@ -67,7 +67,7 @@ void setup() {
 
   pinMode(TUBESENSOR, INPUT_PULLUP);
 
-  Serial.begin(14400);
+  Serial.begin(9600);
   Serial.println("Starting");
   msg.setup();
   timeForHeartbeat = millis() + 1000;
@@ -80,6 +80,11 @@ void setup() {
 void loop() {
   bluetoothComs();
   stopnow = msg.isStopped();
+  Serial.print("Storage: ");
+  Serial.println(msg.getwhichStorage());
+
+  Serial.print("Supply: ");
+  Serial.println(msg.getwhichSupply());
   if (stopnow && wasstopped == false) {
     wasstopped = true;
     prevState = robotDo;
@@ -91,10 +96,6 @@ void loop() {
     robotDo = prevState;
     counter1 = prevCounter;
   }
-
-  storetubeavailability = msg.getwhichstore();
-  Serial.println("need to print");
-  Serial.println(storetubeavailability);
 
   switch (robotDo)
   {
@@ -158,7 +159,7 @@ void loop() {
       {
         case 0:
           Serial.println("backing up");
-          drive.setPower(-topSpeed*.9, -topSpeed*.9);
+          drive.setPower(-topSpeed, -topSpeed);
           if (lineSensor.isAllBlack()) {
             Serial.println("all black");
             counter1++;
@@ -175,6 +176,7 @@ void loop() {
         case 2:
           drive.setPower(turningSpeed, -turningSpeed);
           //Serial.println("Finishing to turn");
+
           if (lineSensor.sendProcessedValue(7) == 1) {
             counter1++;
           }
@@ -201,11 +203,12 @@ void loop() {
         case -1: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
 			multiplier = topSpeed * lineSensor.avgLinePos();
 			drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
-			storetubeavailability = msg.getwhichstore();
+			storetubeavailability = msg.getwhichStorage();
 			supplytubeavailability = msg.getwhichSupply();
 			counter2 = storetubeavailability;
 
 			break;
+
         case 1:	// Turn towards the tube we want to go to.
 			multiplier = topSpeed * lineSensor.avgLinePos();
 			drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
