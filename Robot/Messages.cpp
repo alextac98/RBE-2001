@@ -39,18 +39,18 @@ Messages::Messages() {
 int Messages::whichStore()
 {
 	int i = 1;
-	unsigned char startrods = availstorage | 0xF0; // 0xFz
+	unsigned char startrods = (availstorage << 4) | 0x0F; // 0xFz
 	// assume availstorage '1' means full
-	for (i = 1; i < 5; i++)
+	for (i = 4; i >= 1; i--)
 	{
-		if ((startrods | 0xFE) == 0xFE)
+		if ((startrods | 0xEF) == 0xEF)
 		{
 			return i;
 		}
 		else
 		{
 			//i++;
-			startrods = ((startrods >> 1) | 0xF0);
+			startrods = ((startrods << 1) | 0x0F);
 		}
 		// return 0;
 	}
