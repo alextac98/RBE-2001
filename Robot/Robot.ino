@@ -47,7 +47,7 @@ int storetubeavailability = 0;
 int supplytubeavailability = 0;
 
 float topSpeed = 30.0;
-float turningSpeed = 55.0;
+float turningSpeed = 30.0;
 float multiplier;
 
 bool stopnow = false;
@@ -80,11 +80,7 @@ void setup() {
 void loop() {
   bluetoothComs();
   stopnow = msg.isStopped();
-  Serial.print("Storage: ");
-  Serial.println(msg.getwhichStorage());
-
-  Serial.print("Supply: ");
-  Serial.println(msg.getwhichSupply());
+  
   if (stopnow && wasstopped == false) {
     wasstopped = true;
     prevState = robotDo;
@@ -118,8 +114,7 @@ void loop() {
         armDo = armDownward;
       }
       else {
-        multiplier = topSpeed * lineSensor.avgLinePos();
-        drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		  lineFollow();
       }
       break;
     case pickUpNukeLow:
@@ -140,7 +135,7 @@ void loop() {
           }
           break;
         case armUpward:
-          //Serial.println("hi");
+          Serial.println("hi");
           arm.setArmPosition(up);
           if (arm.isArmPosition(up)) {
             robotDo = goToCenter;
@@ -182,16 +177,14 @@ void loop() {
           }
           break;
         case 3:
-          Serial.println("line following");
-		  multiplier = topSpeed * lineSensor.avgLinePos();
-		  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
-          ii = 0;
-          robotDo = findUsedDispenser;
-		  counter2 = -1;
-          break;
+			drive.setPower(0, 0);
+			ii = 0;
+			robotDo = findUsedDispenser;
+			counter2 = 0;
+			break;
         default:
           //drive.setPower(0, 0);
-          Serial.println("why am I here");
+          Serial.println("GoToCenter Default State");
           break;
       }
       // These happen here so that we don't do them too early or late.
@@ -200,50 +193,48 @@ void loop() {
     case findUsedDispenser:
       switch (counter2)
       {
-        case -1: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
-			multiplier = topSpeed * lineSensor.avgLinePos();
-			drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+        case 0: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
 			storetubeavailability = msg.getwhichStorage();
 			supplytubeavailability = msg.getwhichSupply();
 			counter2 = storetubeavailability;
-
+			Serial.println(counter2);
 			break;
 
         case 1:	// Turn towards the tube we want to go to.
-			multiplier = topSpeed * lineSensor.avgLinePos();
-			drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+			lineFollow();
 			if (lineCounter == 4) {
 				drive.setPower(0, 0);
 				
 			} else if (lineSensor.isAllBlack()) {
 				lineCounter++;
+				drive.setPower(0, 0);
 			}
           break;
 	  case 2:
-		  multiplier = topSpeed * lineSensor.avgLinePos();
-		  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		  lineFollow();
 		  if (lineCounter == 3) {
 			  drive.setPower(0, 0);
 
 		  }
 		  else if (lineSensor.isAllBlack()) {
 			  lineCounter++;
+			  drive.setPower(0, 0);
 		  }
 		  break;
 	  case 3:
-		  multiplier = topSpeed * lineSensor.avgLinePos();
-		  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		  lineFollow();
 		  if (lineCounter == 2) {
 			  drive.setPower(0, 0);
 
 		  }
 		  else if (lineSensor.isAllBlack()) {
 			  lineCounter++;
+			  drive.setPower(0, 0);
 		  }
 		  break;
 	  case 4:
-		  multiplier = topSpeed * lineSensor.avgLinePos();
-		  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		  lineFollow();
+		  Serial.println("im in 4");
 		  if (lineSensor.isAllBlack()) {
 			  drive.setPower(0, 0);
 		  }
@@ -253,6 +244,7 @@ void loop() {
           Serial.println("why am I here");
           break;
       }
+	  break;
     case dispenseNukeHigh:
       //pick up nuke
       // armDo = armMid;
@@ -399,4 +391,9 @@ void bluetoothComs() {
     }
   */
 
+}
+
+void lineFollow() {
+	multiplier = topSpeed * lineSensor.avgLinePos();
+	drive.setPower(topSpeed + multiplier*1.5, topSpeed - multiplier*1.5);
 }
