@@ -41,8 +41,8 @@ int counter = 0;
 int prevCounter = 0;
 int lastTime;
 
-int storetubeavailcounterility = 0;
-int supplytubeavailcounterility = 0;
+int storetubeavailability = 0;
+int supplytubeavailability = 0;
 
 float topSpeed = 30.0;
 float turningSpeed = 55.0;
@@ -182,7 +182,9 @@ void loop() {
         default:
           //drive.setPower(0, 0);
           Serial.println("why am I here");
+          break;
       }
+      break;
 
     case findUsedDispenser:
       counter = 0;
@@ -191,11 +193,11 @@ void loop() {
       // bool rightvex = false;
       switch (counter)
       {
-        case 0: // Figure out where to go, then line follow straight until we hit the correct storage tube to arrive at.
-          drive.setPower(0, 0);
-          Serial.println("Calculating availcounterility");
-          storetubeavailcounterility = msg.whichStore();
-          while (ii < storetubeavailcounterility) {
+        case 0: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
+          // drive.setPower(0, 0);
+          Serial.println("Calculating availability");
+          storetubeavailability = msg.whichStore();
+          while (ii < storetubeavailability) {
             if (!(lineSensor.isAllBlack())) {
               multiplier = topSpeed * lineSensor.avgLinePos();						// Do some line following.
               drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
@@ -321,8 +323,8 @@ void loop() {
       }
       robotDo = findNewDispenser;
       break;
-      /*int storetubeavailcounterility = 0;
-        int supplytubeavailcounterility = 0;*/
+      /*int storetubeavailability = 0;
+        int supplytubeavailability = 0;*/
 
       //multiplier = topSpeed*lineSensor.avgLinePos();
       //drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
