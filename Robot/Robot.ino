@@ -90,6 +90,10 @@ void loop() {
     counter = prevCounter;
   }
 
+  storetubeavailability = msg.getwhichstore();
+  Serial.println("need to print");
+  Serial.println(storetubeavailability);
+
   switch (robotDo)
   {
     case Start:
