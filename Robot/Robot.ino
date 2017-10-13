@@ -65,7 +65,7 @@ void setup() {
 
   pinMode(TUBESENSOR, INPUT_PULLUP);
 
-  Serial.begin(14400);
+  Serial.begin(9600);
   Serial.println("Starting");
   msg.setup();
   timeForHeartbeat = millis() + 1000;
@@ -78,6 +78,11 @@ void setup() {
 void loop() {
   bluetoothComs();
   stopnow = msg.isStopped();
+  Serial.print("Storage: ");
+  Serial.println(msg.getwhichStorage());
+
+  Serial.print("Supply: ");
+  Serial.println(msg.getwhichSupply());
   if (stopnow && wasstopped == false) {
     wasstopped = true;
     prevState = robotDo;
