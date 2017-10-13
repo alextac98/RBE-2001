@@ -41,6 +41,7 @@ int Messages::whichStore()
 	unsigned char startrods = ((availstorage << 4) | 0x0F); // 0xFz
 	// assume availstorage '1' means full
 	for (i = 4; i >= 1; i--)
+
 	{
 		if ((startrods | 0x7F) == 0x7F)
 		{
@@ -60,7 +61,7 @@ int Messages::whichSupply()                      // This is like the previous tw
   int c = 4;
   unsigned char suprods = (availsupply << 4) | 0x0F; // 0xFz
   // assume availstorage '1' means full
-  for (c = 1; c >=1; c--)
+  for (c = 4; c >=1; c--)
   {
     if ((suprods | 0x7F) == 0x7F)
     {
@@ -74,11 +75,15 @@ int Messages::whichSupply()                      // This is like the previous tw
   }
 }
 
+<<<<<<< HEAD
 /* Read the correct supply variable */
 int Messages::getwhichSupply()
 {
   return supprod;
 }
+=======
+int getwhichSupply(); 
+>>>>>>> a177984a26b914dd6ec72f55564195f12f52882a
 
 
 /*  Returns if the state is 0x00 "Reserved" or 0x01 "Stopped".*/
