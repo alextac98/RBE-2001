@@ -32,7 +32,7 @@ unsigned int robotstatuscounter = 0;                                    // This 
 int pos = 10;
 int posmin = 0;    // varicounterle to store the servo position
 int posmax = 500;
-int ii = 0; // This is for the storage tube availability variable. 
+int ii = 0; // This is for the storage tube availability variable.
 
 
 robotdoState robotDo;
@@ -142,13 +142,12 @@ void loop() {
           }
           break;
         default:
-        
+
           break;
       }
       break;
     case goToCenter:
       //go to center
-      //counter = 0;
       switch (counter)
       {
         case 0:
@@ -178,40 +177,43 @@ void loop() {
           Serial.println("line following");
           multiplier = topSpeed * lineSensor.avgLinePos();
           drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+          counter = 0;
+          ii = 0;
+          robotDo = findUsedDispenser;
           break;
         default:
           //drive.setPower(0, 0);
           Serial.println("why am I here");
           break;
       }
-      break;
+      // These happen here so that we don't do them too early or late.
 
+      break;
     case findUsedDispenser:
-      counter = 0;
-      ii = 0;
       // bool rearvex = true;			// These are the light sensor booleans.
       // bool rightvex = false;
       switch (counter)
       {
         case 0: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
-          // drive.setPower(0, 0);
-          Serial.println("Calculating availability");
-          storetubeavailability = msg.whichStore();
-          while (ii < storetubeavailability) {
-            if (!(lineSensor.isAllBlack())) {
-              multiplier = topSpeed * lineSensor.avgLinePos();						// Do some line following.
-              drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
-            }
-            else {
-              ii++;
-            }
-          }
           drive.setPower(0, 0);
-          counter++;
+          //          Serial.println("Calculating availability");
+          //          storetubeavailability = msg.whichStore();
+          //          while (ii < storetubeavailability) {
+          //            if (!(lineSensor.isAllBlack())) {
+          //              multiplier = topSpeed * lineSensor.avgLinePos();						// Do some line following.
+          //              drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+          //            }
+          //            else {
+          //              ii++;
+          //              // drive.setPower(0, 0);
+          //              counter++;
+          //            }
+          //          }
           break;
         case 1:	// Turn towards the tube we want to go to.
           // Remember, if we are looking at the insides of the storage tubes, then to the left is where we place our robot.
           // This means that our robot needs to turn left to point to the storage tubes since our robot will be facing the correct direction.
+
 
           // This first case leaves the line turning left.
           Serial.println("starting to turn to storage tube.");
@@ -236,37 +238,23 @@ void loop() {
         case 3:
           Serial.println("Line following to storage tube.");
           if (!(digitalRead(TUBESENSOR))) {
-          multiplier = topSpeed * lineSensor.avgLinePos();
+            multiplier = topSpeed * lineSensor.avgLinePos();
             drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
           }
           else
           {
             drive.setPower(0, 0);
-            counter++;
+            counter = 0;
+            robotDo = dispenseNukeHigh;
           }
-          break;
-        case 4:
-            // Line follow into storage thing, then stop.
-            Serial.println("Placing fuel into tube.");
-            if (!(digitalRead(TUBESENSOR))) {
-            multiplier = topSpeed * lineSensor.avgLinePos();
-              drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
-            }
-            else
-            {
-              drive.setPower(0, 0);
-              counter++;
-            }
           break;
         default:
-            //drive.setPower(0, 0);
-            Serial.println("why am I here");
-            break;
-          }
+          //drive.setPower(0, 0);
+          Serial.println("why am I here");
+          break;
+      }
     case dispenseNukeHigh:
       //pick up nuke
-      drive.setPower(0, 0);
-      counter = 0;
       // armDo = armMid;
       switch (counter)
       {
@@ -330,7 +318,7 @@ void loop() {
       //drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
       break;
     case findNewDispenser:
-      
+
       break;
 
     case robotStop:
