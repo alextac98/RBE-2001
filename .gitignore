@@ -1,6 +1,6 @@
-/Robot/debug
-/.vs
-/Robot/.vs
-/Robot/_vm
+Robot/debug
+.vs
+Robot/.vs
+Robot/_vm
 desktop.ini
 testing_scripts/Arm_State_Machine_program/desktop.ini
