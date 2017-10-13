@@ -37,9 +37,11 @@ int ii = 0; // This is for the storage tube availability variable.
 
 robotdoState robotDo;
 pickupState armDo;
-int counter = 0;
+int counter1 = 0;
+int counter2 = 0;
 int prevCounter = 0;
 int lastTime;
+int lineCounter = 0;
 
 unsigned char storetubeavailability;
 int supplytubeavailability = 0;
@@ -81,13 +83,13 @@ void loop() {
   if (stopnow && wasstopped == false) {
     wasstopped = true;
     prevState = robotDo;
-    prevCounter = counter;
+    prevCounter = counter1;
     robotDo = robotStop;
   }
   else if (stopnow == false && wasstopped == true) {
     wasstopped = false;
     robotDo = prevState;
-    counter = prevCounter;
+    counter1 = prevCounter;
   }
 
   storetubeavailability = msg.getwhichstore();
@@ -141,7 +143,7 @@ void loop() {
           arm.setArmPosition(up);
           if (arm.isArmPosition(up)) {
             robotDo = goToCenter;
-            counter = 0;
+            counter1 = 0;
             Serial.println("next state");
           }
           break;
@@ -152,14 +154,14 @@ void loop() {
       break;
     case goToCenter:
       //go to center
-      switch (counter)
+      switch (counter1)
       {
         case 0:
           Serial.println("backing up");
           drive.setPower(-topSpeed*.9, -topSpeed*.9);
           if (lineSensor.isAllBlack()) {
             Serial.println("all black");
-            counter++;
+            counter1++;
             // drive.setPower(turningSpeed, -turningSpeed);
           }
           break;
@@ -167,23 +169,23 @@ void loop() {
           Serial.println("starting to turn");
           drive.setPower(turningSpeed, -turningSpeed);
           if (lineSensor.sendProcessedValue(9) == 1) {
-            counter++;
+            counter1++;
           }
           break;
         case 2:
           drive.setPower(turningSpeed, -turningSpeed);
           //Serial.println("Finishing to turn");
           if (lineSensor.sendProcessedValue(7) == 1) {
-            counter++;
+            counter1++;
           }
           break;
         case 3:
           Serial.println("line following");
 		  multiplier = topSpeed * lineSensor.avgLinePos();
 		  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
-          counter = 0;
           ii = 0;
           robotDo = findUsedDispenser;
+		  counter2 = -1;
           break;
         default:
           //drive.setPower(0, 0);
@@ -194,70 +196,55 @@ void loop() {
 
       break;
     case findUsedDispenser:
-      // bool rearvex = true;			// These are the light sensor booleans.
-      // bool rightvex = false;
-      switch (counter)
+      switch (counter2)
       {
-        case 0: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
+        case -1: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
 			multiplier = topSpeed * lineSensor.avgLinePos();
 			drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
 			storetubeavailability = msg.getwhichstore();
-			Serial.println("need to print");
-			Serial.println(storetubeavailability);
+			supplytubeavailability = msg.getwhichSupply();
+			counter2 = storetubeavailability;
 
-
-          //          Serial.println("Calculating availability");
-          //          storetubeavailability = msg.whichStore();
-          //          while (ii < storetubeavailability) {
-          //            if (!(lineSensor.isAllBlack())) {
-          //              multiplier = topSpeed * lineSensor.avgLinePos();						// Do some line following.
-          //              drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
-          //            }
-          //            else {
-          //              ii++;
-          //              // drive.setPower(0, 0);
-          //              counter++;
-          //            }
-          //          }
 			break;
         case 1:	// Turn towards the tube we want to go to.
-          // Remember, if we are looking at the insides of the storage tubes, then to the left is where we place our robot.
-          // This means that our robot needs to turn left to point to the storage tubes since our robot will be facing the correct direction.
+			multiplier = topSpeed * lineSensor.avgLinePos();
+			drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+			if (lineCounter == 4) {
+				drive.setPower(0, 0);
+				
+			} else if (lineSensor.isAllBlack()) {
+				lineCounter++;
+			}
+          break;
+	  case 2:
+		  multiplier = topSpeed * lineSensor.avgLinePos();
+		  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		  if (lineCounter == 3) {
+			  drive.setPower(0, 0);
 
+		  }
+		  else if (lineSensor.isAllBlack()) {
+			  lineCounter++;
+		  }
+		  break;
+	  case 3:
+		  multiplier = topSpeed * lineSensor.avgLinePos();
+		  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		  if (lineCounter == 2) {
+			  drive.setPower(0, 0);
 
-          // This first case leaves the line turning left.
-          Serial.println("starting to turn to storage tube.");
-          if (lineSensor.sendProcessedValue(0) == 1) { // Read from the sensor that points straight back.
-            drive.setPower(-turningSpeed, turningSpeed); // I am assuming this means that the left wheel goes backwards and the right wheel turns forwards.
-          }
-          else
-          {
-            counter++;
-          }
-          break;
-        case 2:
-          // Now that he rear pointing sensor is off the black line, now we want to keep turning until we arrive at the black line again.
-          Serial.println("Finishing to turn");
-          drive.setPower(-turningSpeed, turningSpeed);
-          if (lineSensor.sendProcessedValue(0) == 1) {
-            drive.setPower(0, 0);
-            counter++;
-            break;
-          }
-          break;
-        case 3:
-          Serial.println("Line following to storage tube.");
-          if (!(digitalRead(TUBESENSOR))) {
-            multiplier = topSpeed * lineSensor.avgLinePos();
-            drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
-          }
-          else
-          {
-            drive.setPower(0, 0);
-            counter = 0;
-            robotDo = dispenseNukeHigh;
-          }
-          break;
+		  }
+		  else if (lineSensor.isAllBlack()) {
+			  lineCounter++;
+		  }
+		  break;
+	  case 4:
+		  multiplier = topSpeed * lineSensor.avgLinePos();
+		  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		  if (lineSensor.isAllBlack()) {
+			  drive.setPower(0, 0);
+		  }
+		  break;
         default:
           //drive.setPower(0, 0);
           Serial.println("why am I here");
@@ -266,20 +253,20 @@ void loop() {
     case dispenseNukeHigh:
       //pick up nuke
       // armDo = armMid;
-      switch (counter)
+      switch (counter1)
       {
         case 0: // arm mid position
           arm.setArmPosition(mid);
           if (arm.isArmPosition(mid)) {
             // armDo = open;
-            counter++;
+            counter1++;
           }
           break;
         case 1: // open claw
           arm.openGripper();
           if (arm.openGripper()) {
             // armDo = armUpward;
-            counter++;
+            counter1++;
             msg.setradAlert(nofuel);
           }
           break;
@@ -287,31 +274,31 @@ void loop() {
           //Serial.println("hi");
           arm.setArmPosition(up);
           if (arm.isArmPosition(up)) {
-            counter++;
+            counter1++;
           }
           break;
         case 3: // Close gripper
           arm.closeGripper();
           if (arm.closeGripper()) {
-            counter++;
+            counter1++;
           }
           break;
         case 4: // Move arm to mid position to push rod into holder.
           arm.setArmPosition(mid);
           if (arm.isArmPosition(mid)) {
-            counter++;
+            counter1++;
           }
           break;
         case 5: // Pull closed claw back into robot.
           arm.setArmPosition(up);
           if (arm.isArmPosition(up)) {
-            counter++;
+            counter1++;
           }
           break;
         case 6: // Open the gripper to prepare for the new rod.
           arm.openGripper();
           if (arm.openGripper()) {
-            counter++;
+            counter1++;
           }
           break;
         // case 6:
