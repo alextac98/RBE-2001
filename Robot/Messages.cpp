@@ -26,9 +26,8 @@ Messages::Messages() {
   radiationalert = 0x00;                  // We don't start with radiation. 0x2C spent fuel, 0xFF is new fuel
 
   storerod = 1;								// We initialize the storerod 
-
-
-
+  supprod = 1;
+  
   robotmove = 0x01;       // 0x01 = stopped 0x02 = teleop moving, 0x03 auto moving
   prevrobotmove = 0x03;   // This is how we store the previous movement variable.
   robotgrip = 0x01;       // 0x01 = no rod, 0x02 = has rod
@@ -38,12 +37,12 @@ Messages::Messages() {
 
 int Messages::whichStore()
 {
-	int i = 1;
-	unsigned char startrods = (availstorage << 4) | 0x0F; // 0xFz
+	int i = 4;
+	unsigned char startrods = ((availstorage << 4) | 0x0F); // 0xFz
 	// assume availstorage '1' means full
 	for (i = 4; i >= 1; i--)
 	{
-		if ((startrods | 0xEF) == 0xEF)
+		if ((startrods | 0x7F) == 0x7F)
 		{
 			return i;
 		}
@@ -58,23 +57,28 @@ int Messages::whichStore()
 
 int Messages::whichSupply()                      // This is like the previous two methods above, but for supply tubes.
 {
-  int c = 1;
-  unsigned char suprods = availsupply | 0xF0; // 0xFz
+  int c = 4;
+  unsigned char suprods = (availsupply << 4) | 0x0F; // 0xFz
   // assume availstorage '1' means full
-  for (c = 1; c < 5; c++)
+  for (c = 1; c >=1; c--)
   {
-    if ((suprods | 0xFE) == 0xFE)
+    if ((suprods | 0x7F) == 0x7F)
     {
       return c;
     }
     else
     {
-      suprods = ((suprods >> 1) | 0xF0);
+      suprods = ((suprods << 1) | 0x0F);
     }
     // return 0;
   }
 }
-  int getwhichSupply(); 
+
+/* Read the correct supply variable */
+int Messages::getwhichSupply()
+{
+  return supprod;
+}
 
 
 /*  Returns if the state is 0x00 "Reserved" or 0x01 "Stopped".*/
