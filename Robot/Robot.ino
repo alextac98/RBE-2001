@@ -148,7 +148,7 @@ void loop() {
       break;
     case goToCenter:
       //go to center
-      counter = 0;
+      //counter = 0;
       switch (counter)
       {
         case 0:
