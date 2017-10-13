@@ -41,11 +41,11 @@ int counter = 0;
 int prevCounter = 0;
 int lastTime;
 
-int storetubeavailability = 0;
+unsigned char storetubeavailability;
 int supplytubeavailability = 0;
 
 float topSpeed = 30.0;
-float turningSpeed = 55.0;
+float turningSpeed = 35.0;
 float multiplier;
 
 bool stopnow = false;
@@ -152,7 +152,7 @@ void loop() {
       {
         case 0:
           Serial.println("backing up");
-          drive.setPower(-topSpeed, -topSpeed);
+          drive.setPower(-topSpeed*.9, -topSpeed*.9);
           if (lineSensor.isAllBlack()) {
             Serial.println("all black");
             counter++;
@@ -169,14 +169,14 @@ void loop() {
         case 2:
           drive.setPower(turningSpeed, -turningSpeed);
           //Serial.println("Finishing to turn");
-          if (lineSensor.sendProcessedValue(6) == 1) {
+          if (lineSensor.sendProcessedValue(7) == 1) {
             counter++;
           }
           break;
         case 3:
           Serial.println("line following");
-          multiplier = topSpeed * lineSensor.avgLinePos();
-          drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+		  multiplier = topSpeed * lineSensor.avgLinePos();
+		  drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
           counter = 0;
           ii = 0;
           robotDo = findUsedDispenser;
@@ -195,7 +195,13 @@ void loop() {
       switch (counter)
       {
         case 0: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
-          drive.setPower(0, 0);
+			multiplier = topSpeed * lineSensor.avgLinePos();
+			drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+			storetubeavailability = msg.getwhichstore();
+			Serial.println("need to print");
+			Serial.println(storetubeavailability);
+
+
           //          Serial.println("Calculating availability");
           //          storetubeavailability = msg.whichStore();
           //          while (ii < storetubeavailability) {
@@ -209,7 +215,7 @@ void loop() {
           //              counter++;
           //            }
           //          }
-          break;
+			break;
         case 1:	// Turn towards the tube we want to go to.
           // Remember, if we are looking at the insides of the storage tubes, then to the left is where we place our robot.
           // This means that our robot needs to turn left to point to the storage tubes since our robot will be facing the correct direction.

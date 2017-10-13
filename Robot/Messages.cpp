@@ -39,9 +39,9 @@ Messages::Messages() {
 int Messages::whichStore()
 {
 	int i = 1;
-	unsigned char startrods = availstorage | 0xF0; // 0xFz
+	unsigned char startrods = availstorage; // 0xFz
 	// assume availstorage '1' means full
-	for (i = 1; i < 5; i++)
+	for (i = 1; i <= 4; i++)
 	{
 		if ((startrods | 0xFE) == 0xFE)
 		{
@@ -59,10 +59,9 @@ int Messages::whichStore()
 int Messages::whichSupply()                      // This is like the previous two methods above, but for supply tubes.
 {
   int c = 1;
-  unsigned char suprods = availsupply | 0xF0; // 0xFz
+  unsigned char suprods = availsupply;
   // assume availstorage '1' means full
-  for (c = 1; c < 5; c++)
-  {
+  for (c = 4; c <= 1; c--){
     if ((suprods | 0xFE) == 0xFE)
     {
       return c;
@@ -74,7 +73,8 @@ int Messages::whichSupply()                      // This is like the previous tw
     // return 0;
   }
 }
-  int getwhichSupply(); 
+
+int getwhichSupply(); 
 
 
 /*  Returns if the state is 0x00 "Reserved" or 0x01 "Stopped".*/
