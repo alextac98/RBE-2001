@@ -82,128 +82,128 @@ void loop() {
   stopnow = msg.isStopped();
   
   if (stopnow && wasstopped == false) {
-    wasstopped = true;
-    prevState = robotDo;
-    prevCounter = counter1;
-    robotDo = robotStop;
+	wasstopped = true;
+	prevState = robotDo;
+	prevCounter = counter1;
+	robotDo = robotStop;
   }
   else if (stopnow == false && wasstopped == true) {
-    wasstopped = false;
-    robotDo = prevState;
-    counter1 = prevCounter;
+	wasstopped = false;
+	robotDo = prevState;
+	counter1 = prevCounter;
   }
 
   switch (robotDo)
   {
-    case Start:
-      //Set arm up
-      arm.setArmPosition(up);
-      // open gripper
-      arm.openGripper();
-      //drive motors set to zero
-      drive.setPower(0, 0);
-      if (arm.isArmPosition(up)) {
+	case Start:
+	  //Set arm up
+	  arm.setArmPosition(up);
+	  // open gripper
+	  arm.openGripper();
+	  //drive motors set to zero
+	  drive.setPower(0, 0);
+	  if (arm.isArmPosition(up)) {
 		  robotDo = approachNuke;
 		  //robotDo = findUsedDispenser;
 		  counter2 = 0;
 		  counter1 = 0;
-      }
+	  }
 
-      break;
-    case approachNuke:
-      if (digitalRead(TUBESENSOR)) {
-        drive.setPower(0, 0);
-        robotDo = pickUpNukeLow;
-        armDo = armDownward;
-      }
-      else {
+	  break;
+	case approachNuke:
+	  if (digitalRead(TUBESENSOR)) {
+		drive.setPower(0, 0);
+		robotDo = pickUpNukeLow;
+		armDo = armDownward;
+	  }
+	  else {
 		  lineFollow();
-      }
-      break;
-    case pickUpNukeLow:
-      //pick up nuke
-      drive.setPower(0, 0);
-      switch (armDo)
-      {
-        case armDownward:
-          arm.setArmPosition(down);
-          if (arm.isArmPosition(down)) {
-            armDo = close;
-          }
-          break;
-        case close:
-          if (arm.closeGripper()) {
-            armDo = armUpward;
-            msg.setradAlert(spentfuel);
-          }
-          break;
-        case armUpward:
-          Serial.println("hi");
-          arm.setArmPosition(up);
-          if (arm.isArmPosition(up)) {
-            robotDo = goToCenter;
-            counter1 = 0;
-            Serial.println("next state");
-          }
-          break;
-        default:
+	  }
+	  break;
+	case pickUpNukeLow:
+	  //pick up nuke
+	  drive.setPower(0, 0);
+	  switch (armDo)
+	  {
+		case armDownward:
+		  arm.setArmPosition(down);
+		  if (arm.isArmPosition(down)) {
+			armDo = close;
+		  }
+		  break;
+		case close:
+		  if (arm.closeGripper()) {
+			armDo = armUpward;
+			msg.setradAlert(spentfuel);
+		  }
+		  break;
+		case armUpward:
+		  Serial.println("hi");
+		  arm.setArmPosition(up);
+		  if (arm.isArmPosition(up)) {
+			robotDo = goToCenter;
+			counter1 = 0;
+			Serial.println("next state");
+		  }
+		  break;
+		default:
 
-          break;
-      }
-      break;
-    case goToCenter:
-      //go to center
-      switch (counter1)
-      {
-        case 0:
-          Serial.println("backing up");
-          drive.setPower(-topSpeed, -topSpeed);
-          if (lineSensor.isAllBlack()) {
-            Serial.println("all black");
-            counter1++;
-            // drive.setPower(turningSpeed, -turningSpeed);
-          }
-          break;
-        case 1:
-          Serial.println("starting to turn");
-          drive.setPower(turningSpeed, -turningSpeed);
-          if (lineSensor.sendProcessedValue(9) == 1) {
-            counter1++;
-          }
-          break;
-        case 2:
-          drive.setPower(turningSpeed, -turningSpeed);
-          //Serial.println("Finishing to turn");
+		  break;
+	  }
+	  break;
+	case goToCenter:
+	  //go to center
+	  switch (counter1)
+	  {
+		case 0:
+		  Serial.println("backing up");
+		  drive.setPower(-topSpeed, -topSpeed);
+		  if (lineSensor.isAllBlack()) {
+			Serial.println("all black");
+			counter1++;
+			// drive.setPower(turningSpeed, -turningSpeed);
+		  }
+		  break;
+		case 1:
+		  Serial.println("starting to turn");
+		  drive.setPower(turningSpeed, -turningSpeed);
+		  if (lineSensor.sendProcessedValue(9) == 1) {
+			counter1++;
+		  }
+		  break;
+		case 2:
+		  drive.setPower(turningSpeed, -turningSpeed);
+		  //Serial.println("Finishing to turn");
 
-          if (lineSensor.sendProcessedValue(7) == 1) {
-            counter1++;
-          }
-          break;
-        case 3:
+		  if (lineSensor.sendProcessedValue(7) == 1) {
+			counter1++;
+		  }
+		  break;
+		case 3:
 			drive.setPower(0, 0);
 			ii = 0;
 			robotDo = findUsedDispenser;
 			counter2 = 0;
 			break;
-        default:
-          //drive.setPower(0, 0);
-          Serial.println("GoToCenter Default State");
-          break;
-      }
-      // These happen here so that we don't do them too early or late.
+		default:
+		  //drive.setPower(0, 0);
+		  Serial.println("GoToCenter Default State");
+		  break;
+	  }
+	  // These happen here so that we don't do them too early or late.
 
-      break;
-    case findUsedDispenser:
-      switch (counter2)
-      {
-        case 0: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
+	  break;
+	case findUsedDispenser:
+	  switch (counter2)
+	  {
+		case 0: // Figure out where to go, then line follow straight until we hit the correct storage tube 'T'.
 			storetubeavailability = msg.getwhichStorage();
 			supplytubeavailability = msg.getwhichSupply();
 			counter2 = storetubeavailability;
 			Serial.println(counter2);
 			break;
 
-        case 1:	// Turn towards the tube we want to go to.
+		case 1:	// Turn towards the tube we want to go to.
 			lineFollow();
 			Serial.println("I'm in 1");
 			if (lineCounter == 4) {
@@ -213,7 +213,7 @@ void loop() {
 				lineCounter++;
 				drive.setPower(0, 0);
 			}
-          break;
+		  break;
 	  case 2:
 		  lineFollow();
 		  Serial.println("I'm in 2");
@@ -266,54 +266,54 @@ void loop() {
 			  counter1 = 0;
 		  }
 		  break;
-      default:
-          drive.setPower(0, 0);
-          Serial.println("why am I here");
-          break;
-      }
+	  default:
+		  drive.setPower(0, 0);
+		  Serial.println("why am I here");
+		  break;
+	  }
 	  break;
-    case dispenseNukeHigh:
-      //pick up nuke
-      // armDo = armMid;
+	case dispenseNukeHigh:
+	  //pick up nuke
+	  // armDo = armMid;
 		drive.setPower(0, 0);
-      switch (counter1)
-      {
-        case 0: // arm mid position
-          arm.setArmPosition(mid);
-          if (arm.isArmPosition(mid)) {
-            // armDo = open;
-            counter1++;
-          }
-          break;
-        case 1: // open claw
-          if (arm.openGripper()) {
-            // armDo = armUpward;
-            counter1++;
-            msg.setradAlert(nofuel);
-          }
-          break;
-        case 2: // arm upward
-          //Serial.println("hi");
-          arm.setArmPosition(up);
-          if (arm.isArmPosition(up)) {
+	  switch (counter1)
+	  {
+		case 0: // arm mid position
+		  arm.setArmPosition(mid);
+		  if (arm.isArmPosition(mid)) {
+			// armDo = open;
+			counter1++;
+		  }
+		  break;
+		case 1: // open claw
+		  if (arm.openGripper()) {
+			// armDo = armUpward;
+			counter1++;
+			msg.setradAlert(nofuel);
+		  }
+		  break;
+		case 2: // arm upward
+		  //Serial.println("hi");
+		  arm.setArmPosition(up);
+		  if (arm.isArmPosition(up)) {
 			  robotDo = findNewDispenser;
 			  counter2 = 0;
-          }
-          break;
-        // case 6:
-        // This is where we turn around and go back.
-        default:
-          break;
-      }
-      //robotDo = findNewDispenser;
-      break;
-      /*int storetubeavailability = 0;
-        int supplytubeavailability = 0;*/
+		  }
+		  break;
+		// case 6:
+		// This is where we turn around and go back.
+		default:
+		  break;
+	  }
+	  //robotDo = findNewDispenser;
+	  break;
+	  /*int storetubeavailability = 0;
+		int supplytubeavailability = 0;*/
 
-      //multiplier = topSpeed*lineSensor.avgLinePos();
-      //drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
-      break;
-    case findNewDispenser:
+	  //multiplier = topSpeed*lineSensor.avgLinePos();
+	  //drive.setPower(topSpeed + multiplier, topSpeed - multiplier);
+	  break;
+	case findNewDispenser:
 
 		switch (counter2)
 		{
@@ -357,6 +357,7 @@ void loop() {
 			}
 			break;
 		case 5:
+
 			if (arm.closeGripper()) {
 				counter2++;
 			}
@@ -366,25 +367,32 @@ void loop() {
 			if (lineSensor.isAllBlack()) {
 				robotDo = goToReactor;
 				counter1 = 0;
-				drive.setPower(0, 0);
+				counter2 = 0;
+				//drive.setPower(0, 0);
 			}
 			break;
 
 		default:
 			drive.setPower(0, 0);
 			Serial.println("FindNewDispenser Default State");
+			robotDo = goToReactor;
 			break;
 		}
 		// These happen here so that we don't do them too early or late.
 
-		break;
+		//break;
 	case goToReactor:
+		if (counter1 == 0) {
+			drive.setPower(turningSpeed, -turningSpeed);
+			counter1++;
+		}
 		switch (counter1)
 		{
 		case 0:
-			drive.setPower(turningSpeed, -25);
+
+			drive.setPower(turningSpeed, -turningSpeed);
 			Serial.println("Found");
-			delay(200);
+			//delay(200);
 			if (lineSensor.sendProcessedValue(9) == 1) {
 				lineFollow();
 				Serial.println("Line Following");
@@ -428,19 +436,19 @@ void loop() {
 	case End:
 		drive.setPower(0, 0);
 		break;
-    case robotStop:
-      drive.setPower(0, 0);
-      if (!msg.isStopped()) {
-        robotDo = prevState;
-        break;
-      }
-      else {
-        robotDo = robotStop;
-      }
-      break;
-    default:
-      drive.setPower(0, 0);
-      break;
+	case robotStop:
+	  drive.setPower(0, 0);
+	  if (!msg.isStopped()) {
+		robotDo = prevState;
+		break;
+	  }
+	  else {
+		robotDo = robotStop;
+	  }
+	  break;
+	default:
+	  drive.setPower(0, 0);
+	  break;
   }
 
 }
@@ -449,27 +457,27 @@ void loop() {
 
 void bluetoothComs() {
   if (msg.readcomms()) {
-    //msg.printMessage();
+	//msg.printMessage();
   }
   if (millis() > timeForHeartbeat)
   {
-    timeForHeartbeat = millis() + 1000;
-    // msg.setrobotmovestate(0x01)
-    //if (robotstatuscounter == 0) // If Now is the time so send the counter
-    if (radcounter == 0)
-    {
-      msg.sendHeartbeat();
+	timeForHeartbeat = millis() + 1000;
+	// msg.setrobotmovestate(0x01)
+	//if (robotstatuscounter == 0) // If Now is the time so send the counter
+	if (radcounter == 0)
+	{
+	  msg.sendHeartbeat();
 
-      // msg.setradAlert(spentfuel); // new fuel alert = 0xFF, spent fuel = 0x2C
-      msg.sendMessage(kRadiationAlert); // Send radiation
-      radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
-    }
-    else
-    {
-      msg.sendHeartbeat();
-      radcounter = (radcounter + 1) % 4; // this equals either 0, 1, 2, or 3.
-    }
-    robotstatuscounter = (robotstatuscounter + 1) % 6; // This is for the robot counter. Let's make this a seperate if statement.
+	  // msg.setradAlert(spentfuel); // new fuel alert = 0xFF, spent fuel = 0x2C
+	  msg.sendMessage(kRadiationAlert); // Send radiation
+	  radcounter = (radcounter + 1) % 4; // this equals either 0, 1, or 2.
+	}
+	else
+	{
+	  msg.sendHeartbeat();
+	  radcounter = (radcounter + 1) % 4; // this equals either 0, 1, 2, or 3.
+	}
+	robotstatuscounter = (robotstatuscounter + 1) % 6; // This is for the robot counter. Let's make this a seperate if statement.
   }
 
   lcd.setCursor(0, 0);
@@ -484,26 +492,26 @@ void bluetoothComs() {
 
   if (msg.readradAlert() == spentfuel)
   {
-    analogWrite(DRIVEMODELED, 512);
+	analogWrite(DRIVEMODELED, 512);
   }
   else if (msg.readradAlert() == newfuel)
   {
-    analogWrite(DRIVEMODELED, 256);
+	analogWrite(DRIVEMODELED, 256);
   }
   else {
-    analogWrite(DRIVEMODELED, 0);
+	analogWrite(DRIVEMODELED, 0);
   }
   /*
-    if (msg.isStopped())
-    {
-  	//Serial.println("Stopped");
-  	digitalWrite(DRIVEMODELED, LOW); // Inverted logic
+	if (msg.isStopped())
+	{
+	//Serial.println("Stopped");
+	digitalWrite(DRIVEMODELED, LOW); // Inverted logic
 
-    }
-    else {
-  	//Serial.println("Autonomous");
-  	digitalWrite(DRIVEMODELED, HIGH); // Inverted logic
-    }
+	}
+	else {
+	//Serial.println("Autonomous");
+	digitalWrite(DRIVEMODELED, HIGH); // Inverted logic
+	}
   */
 
 }
